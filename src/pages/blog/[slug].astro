@@ -1,0 +1,71 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/layout/Breadcrumb.astro';
+import EntityCard from '../../components/cards/EntityCard.astro';
+import BlogPostCard from '../../components/blog/BlogPostCard.astro';
+import { loadBlogContext, resolveBlogMeta } from '../../utils/blog';
+import { buildSearchDocs } from '../../utils/searchDocs';
+import type { SearchDoc } from '../../utils/search';
+
+export async function getStaticPaths() {
+  const [posts, allSearchDocs] = await Promise.all([getCollection('blog'), buildSearchDocs()]);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post, allSearchDocs },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  allSearchDocs: SearchDoc[];
+}
+
+const { post, allSearchDocs } = Astro.props;
+const ctx = await loadBlogContext();
+const meta = resolveBlogMeta(post, ctx);
+const pageTitle = post.data.title || `Blog-Beitrag vom ${meta.formattedDate}`;
+
+const searchDocMap = new Map(allSearchDocs.map((doc) => [doc.id, doc]));
+const relatedDocs = [
+  ...meta.linkedEvents.map((e) => searchDocMap.get(`event-${e.id}`)),
+  ...meta.linkedProjects.map((p) => searchDocMap.get(`project-${p.id}`)),
+  ...meta.linkedDatasets.map((d) => searchDocMap.get(`dataset-${d.id}`)),
+].filter((doc): doc is SearchDoc => Boolean(doc));
+---
+
+<Layout title={pageTitle} activeNav="blog">
+  <main class="blog-detail-page">
+    <div class="detail-container">
+      <Breadcrumb href="/blog" label="Zurück zum Blog" />
+
+      <div class="detail-content">
+        <BlogPostCard
+          post={post}
+          author={meta.author}
+          linkedProjects={meta.linkedProjects}
+          linkedEvents={meta.linkedEvents}
+          linkedDatasets={meta.linkedDatasets}
+          formattedDate={meta.formattedDate}
+          discussionUrl={meta.discussionUrl}
+          mode="detail"
+          showDiscussionCta={true}
+        />
+      </div>
+
+      {relatedDocs.length > 0 && (
+        <section class="related-section" aria-labelledby="blog-related-entities">
+          <div class="related-header">
+            <h2 id="blog-related-entities">Verwandte Termine, Projekte und Daten</h2>
+          </div>
+
+          <div class="related-entities-grid">
+            {relatedDocs.map((doc) => (
+              <EntityCard doc={doc} slim={true} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  </main>
+</Layout>

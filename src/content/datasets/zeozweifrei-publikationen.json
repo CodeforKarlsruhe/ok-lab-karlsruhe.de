@@ -1,0 +1,13 @@
+{
+  "title": "Publikationen von zeozweifrei.de",
+  "teaser": "Ausführliche Umwelt- und Energieberichte der Umwelt- und Energieagentur des Landkreises.",
+  "description": "Umwelt- und Energieberichte der Umwelt- und Energieagentur Kreis Karlsruhe.",
+  "publisherIds": ["zeozweifrei"],
+  "url": "https://zeozweifrei.de/publikationen/",
+  "tags": ["Umweltschutz", "Energie"],
+  "formats": ["pdf"],
+  "portalId": null,
+  "size": "Unbegrenzt",
+  "personIds": [],
+  "useCases": "Diskussion und Weiterentwicklung der Digitalstrategie"
+}

@@ -1,0 +1,438 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/layout/PageHeader.astro';
+import ViewSwitcher from '../../components/ui/ViewSwitcher.astro';
+import FilterableGrid from '../../components/ui/FilterableGrid.astro';
+import DatasetCard from '../../components/cards/DatasetCard.astro';
+import ResourceCard from '../../components/cards/ResourceCard.astro';
+import { getCollection } from 'astro:content';
+
+const allDatasets = await getCollection('datasets');
+const allPortals = await getCollection('portale');
+const allOrganizations = await getCollection('organizations');
+const allDataFormats = await getCollection('data-formats');
+
+const formatsMap = new Map<string, string>();
+allDataFormats.forEach((fmt) => {
+  formatsMap.set(fmt.id.toLowerCase(), fmt.data.title);
+});
+
+function formatFilterOption(ext: string): { id: string; label: string } {
+  const cleanExt = ext.trim().toLowerCase();
+  const name = formatsMap.get(cleanExt);
+  const cleanName = (name || '').trim();
+
+  // außer es gibt nur die Endung, oder die endung entspricht dem Namen (case-insensitive),
+  // dann diese einzeln: <Endung>. Ohne All-Caps
+  if (!cleanName || cleanName.toLowerCase() === cleanExt) {
+    return { id: cleanExt, label: cleanExt };
+  }
+
+  // <Name> (<Endung>)
+  return { id: cleanExt, label: `${cleanName} (${cleanExt})` };
+}
+
+const sortedDatasets = [...allDatasets].sort((a, b) =>
+  a.data.title.localeCompare(b.data.title, 'de')
+);
+
+// Extract distinct topics and formats in order
+const topics = ['Alle', ...new Set(sortedDatasets.flatMap((d) => d.data.tags || []))];
+
+const distinctExts = [...new Set(sortedDatasets.flatMap((d) => d.data.formats || []))]
+  .map((f) => f.trim().toLowerCase())
+  .filter(Boolean)
+  .sort((a, b) => {
+    const labelA = formatFilterOption(a).label;
+    const labelB = formatFilterOption(b).label;
+    return labelA.localeCompare(labelB, 'de');
+  });
+
+const formatFilterOptions = [
+  { id: 'Alle', label: 'Alle' },
+  ...distinctExts.map((ext) => formatFilterOption(ext)),
+];
+
+// Portals & Organizations data preparation
+const regionPriority: Record<string, number> = {
+  karlsruhe: 1,
+  badenWuerttemberg: 2,
+  deutschland: 3,
+};
+
+const portalsList = allPortals.sort((a, b) => {
+  const pA = regionPriority[a.data.region] ?? 99;
+  const pB = regionPriority[b.data.region] ?? 99;
+  if (pA !== pB) return pA - pB;
+  return a.data.title.localeCompare(b.data.title, 'de');
+});
+const orgsList = allOrganizations
+  .filter((org) => org.data.isOpenDataProvider)
+  .sort((a, b) => a.data.name.localeCompare(b.data.name, 'de'));
+
+const regionPills = [
+  { id: 'all', label: 'Alle', active: true },
+  { id: 'karlsruhe', label: 'Karlsruhe' },
+  { id: 'badenWuerttemberg', label: 'Baden-Württemberg' },
+  { id: 'deutschland', label: 'Deutschland' },
+];
+
+const dataTabs = [
+  { id: 'datasets', label: 'Datensätze', count: sortedDatasets.length, active: true },
+  { id: 'portals', label: 'Portale', count: portalsList.length },
+  { id: 'organizations', label: 'Organisationen', count: orgsList.length },
+];
+---
+
+<Layout title="Offene Daten & Portale" activeNav="daten">
+  <main class="datasets-page">
+    <PageHeader
+      title="Offene Daten & Portale"
+      description="Kuratierte Sammlung offener Datensätze, kommunaler Portale und Schnittstellen für Karlsruhe und Baden-Württemberg."
+    />
+
+    <div class="main-container">
+      <!-- View Switcher Tabs: Datensätze vs Portale vs Organisationen -->
+      <ViewSwitcher tabs={dataTabs} id="datasets-view-switcher" />
+
+      <!-- Tab Panel 1: Datensätze -->
+      <section class="tab-panel active" id="panel-datasets">
+        <FilterableGrid
+          mode="grouped"
+          searchId="search-input"
+          searchPlaceholder="Datensätze durchsuchen..."
+          searchAriaLabel="Datensätze durchsuchen"
+          groups={[
+            { id: 'topic', label: 'Thema', options: topics },
+            { id: 'format', label: 'Format', options: formatFilterOptions },
+          ]}
+          gridId="datasets-grid"
+          gridClass="datasets-grid"
+          emptyId="no-results"
+          emptyTitle="Keine Datensätze gefunden"
+          emptyDescription="Versuche es mit einem anderen Begriff oder setze die Filter zurück."
+          emptyResetId="btn-reset"
+        >
+          {sortedDatasets.map((d) => (
+            <DatasetCard dataset={d} organizations={allOrganizations} />
+          ))}
+        </FilterableGrid>
+      </section>
+
+      <!-- Tab Panel 2: Portale -->
+      <section class="tab-panel" id="panel-portals">
+        <FilterableGrid
+          mode="flat"
+          searchId="portal-search"
+          searchPlaceholder="Portale durchsuchen..."
+          searchAriaLabel="Portale durchsuchen"
+          pills={regionPills}
+          pillsId="portal-region-pills"
+          pillsDataAttr="data-region"
+          gridId="portals-grid"
+          gridClass="portals-grid"
+          emptyId="no-portals-results"
+          emptyTitle="Keine Portale gefunden"
+          emptyDescription="Passe deine Filtereinstellungen oder Suchbegriffe an."
+          emptyResetId="btn-reset-portals"
+        >
+          {portalsList.map((p) => (
+            <ResourceCard resource={p} />
+          ))}
+        </FilterableGrid>
+      </section>
+
+      <!-- Tab Panel 3: Organisationen -->
+      <section class="tab-panel" id="panel-organizations">
+        <FilterableGrid
+          mode="flat"
+          searchId="org-search"
+          searchPlaceholder="Organisationen durchsuchen..."
+          searchAriaLabel="Organisationen durchsuchen"
+          pills={regionPills}
+          pillsId="org-region-pills"
+          pillsDataAttr="data-region"
+          gridId="orgs-grid"
+          gridClass="orgs-grid"
+          emptyId="no-orgs-results"
+          emptyTitle="Keine Organisationen gefunden"
+          emptyDescription="Passe deine Filtereinstellungen oder Suchbegriffe an."
+          emptyResetId="btn-reset-orgs"
+        >
+          {orgsList.map((p) => (
+            <ResourceCard resource={p} />
+          ))}
+        </FilterableGrid>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  function initDataPage() {
+    // Tab switching
+    const tabBtns = document.querySelectorAll('#datasets-view-switcher .view-tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+
+    function switchTab(tabId: string) {
+      tabBtns.forEach((btn) => {
+        const active = (btn as HTMLElement).dataset.tab === tabId;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', String(active));
+      });
+      tabPanels.forEach((panel) => {
+        panel.classList.toggle('active', panel.id === `panel-${tabId}`);
+      });
+    }
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tab = (btn as HTMLElement).dataset.tab || 'datasets';
+        if (tab === 'portals') {
+          history.replaceState(null, '', '#portale');
+        } else if (tab === 'organizations') {
+          history.replaceState(null, '', '#organisationen');
+        } else {
+          history.replaceState(null, '', window.location.pathname);
+        }
+        switchTab(tab);
+      });
+    });
+
+    function applyHash() {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#portale' || hash === '#portals' || hash === '#open-data-portale') {
+        switchTab('portals');
+      } else if (
+        hash === '#organisationen' ||
+        hash === '#organisation' ||
+        hash === '#organizations'
+      ) {
+        switchTab('organizations');
+      } else {
+        switchTab('datasets');
+      }
+    }
+
+    window.addEventListener('hashchange', applyHash);
+    applyHash();
+
+    // 1. Datasets filtering
+    let currentTopic = 'Alle';
+    let currentFormat = 'Alle';
+    let searchQuery = '';
+
+    const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
+    const datasetCards = document.querySelectorAll('.dataset-card');
+    const noResults = document.getElementById('no-results');
+    const btnReset = document.getElementById('btn-reset');
+
+    function applyDropdownUI(groupId: 'topic' | 'format', value: string): string {
+      const wrap = document.getElementById(`dropdown-wrap-${groupId}`);
+      const btn = document.getElementById(`btn-dropdown-${groupId}`);
+      const labelSpan = btn?.querySelector('.group-btn-label');
+      const selectedSpan = btn?.querySelector('.group-btn-selected');
+      const options = wrap?.querySelectorAll<HTMLButtonElement>('.dropdown-option');
+      const defaultLabel = groupId === 'topic' ? 'Thema' : 'Format';
+
+      const matchedOpt = Array.from(options ?? []).find(
+        (opt) => opt.dataset.val?.toLowerCase() === value.toLowerCase()
+      );
+
+      const resolvedVal = matchedOpt?.dataset.val || value;
+      if (!resolvedVal || resolvedVal === 'Alle') {
+        btn?.classList.remove('has-selection');
+        if (labelSpan) labelSpan.textContent = defaultLabel;
+        if (selectedSpan) {
+          selectedSpan.textContent = '';
+          selectedSpan.classList.add('hidden');
+        }
+        options?.forEach((opt, idx) => {
+          opt.classList.toggle('active', idx === 0);
+          opt.setAttribute('aria-selected', idx === 0 ? 'true' : 'false');
+        });
+        return 'Alle';
+      }
+
+      btn?.classList.add('has-selection');
+      if (labelSpan) labelSpan.textContent = `${defaultLabel}:`;
+      if (selectedSpan) {
+        selectedSpan.textContent = matchedOpt?.querySelector('span')?.textContent || resolvedVal;
+        selectedSpan.classList.remove('hidden');
+      }
+      options?.forEach((opt) => {
+        const isMatch = opt.dataset.val === resolvedVal;
+        opt.classList.toggle('active', isMatch);
+        opt.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+      });
+      return resolvedVal;
+    }
+
+    document.addEventListener('filter-change', (e: any) => {
+      const { group, value } = e.detail;
+      if (group === 'topic') currentTopic = value;
+      if (group === 'format') currentFormat = value;
+      filterDatasets();
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = (e.target as HTMLInputElement).value.trim().toLowerCase();
+        filterDatasets();
+      });
+    }
+
+    if (btnReset) {
+      btnReset.addEventListener('click', () => {
+        if (searchInput) searchInput.value = '';
+        searchQuery = '';
+        currentTopic = applyDropdownUI('topic', 'Alle');
+        currentFormat = applyDropdownUI('format', 'Alle');
+        filterDatasets();
+      });
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramTopic = urlParams.get('topic');
+    const paramFormat = urlParams.get('format');
+    const paramQuery = urlParams.get('q');
+
+    if (paramTopic) {
+      currentTopic = applyDropdownUI('topic', paramTopic);
+    }
+    if (paramFormat) {
+      currentFormat = applyDropdownUI('format', paramFormat);
+    }
+    if (paramQuery && searchInput) {
+      searchInput.value = paramQuery;
+      searchQuery = paramQuery.trim().toLowerCase();
+    }
+    if (paramTopic || paramFormat || paramQuery) {
+      switchTab('datasets');
+      filterDatasets();
+    }
+
+    function filterDatasets() {
+      let visibleCount = 0;
+      datasetCards.forEach((card) => {
+        const cardEl = card as HTMLElement;
+        const cardTopics = (cardEl.dataset.topics || '')
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean);
+        const cardFormats = (cardEl.dataset.formats || '')
+          .split(',')
+          .map((f) => f.trim().toLowerCase())
+          .filter(Boolean);
+        const searchCorpus = cardEl.dataset.search || '';
+
+        const matchesTopic = currentTopic === 'Alle' || cardTopics.includes(currentTopic);
+        const matchesFormat =
+          currentFormat === 'Alle' || cardFormats.includes(currentFormat.toLowerCase());
+        const matchesSearch = !searchQuery || searchCorpus.includes(searchQuery);
+
+        if (matchesTopic && matchesFormat && matchesSearch) {
+          cardEl.style.display = 'flex';
+          visibleCount++;
+        } else {
+          cardEl.style.display = 'none';
+        }
+      });
+
+      if (noResults) {
+        if (visibleCount === 0) {
+          noResults.classList.remove('hidden');
+          noResults.style.display = 'block';
+        } else {
+          noResults.classList.add('hidden');
+          noResults.style.display = 'none';
+        }
+      }
+    }
+
+    // 2. Portals & Organizations region filtering
+    function setupRegionGrid(
+      searchId: string,
+      pillsId: string,
+      gridId: string,
+      emptyId: string,
+      resetId: string
+    ) {
+      let region = 'all';
+      let query = '';
+      const searchEl = document.getElementById(searchId) as HTMLInputElement | null;
+      const pills = document.querySelectorAll(`#${pillsId} .filter-pill`);
+      const cards = document.querySelectorAll(`#${gridId} .resource-item-card`);
+      const noRes = document.getElementById(emptyId);
+      const resetEl = document.getElementById(resetId);
+
+      function filter() {
+        let visibleCount = 0;
+        cards.forEach((card) => {
+          const cardEl = card as HTMLElement;
+          const reg = cardEl.dataset.region || '';
+          const searchCorpus = (cardEl.dataset.search || '').toLowerCase();
+
+          const matchesRegion = region === 'all' || reg === region;
+          const matchesSearch = !query || searchCorpus.includes(query);
+
+          if (matchesRegion && matchesSearch) {
+            cardEl.style.display = 'flex';
+            visibleCount++;
+          } else {
+            cardEl.style.display = 'none';
+          }
+        });
+
+        if (noRes) {
+          noRes.classList.toggle('hidden', visibleCount > 0);
+          noRes.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+      }
+
+      searchEl?.addEventListener('input', (e) => {
+        query = (e.target as HTMLInputElement).value.trim().toLowerCase();
+        filter();
+      });
+
+      pills.forEach((pill) => {
+        pill.addEventListener('click', () => {
+          pills.forEach((p) => p.classList.remove('active'));
+          pill.classList.add('active');
+          region = (pill as HTMLElement).dataset.region || 'all';
+          filter();
+        });
+      });
+
+      resetEl?.addEventListener('click', () => {
+        if (searchEl) searchEl.value = '';
+        query = '';
+        region = 'all';
+        pills.forEach((p, idx) => p.classList.toggle('active', idx === 0));
+        filter();
+      });
+    }
+
+    setupRegionGrid(
+      'portal-search',
+      'portal-region-pills',
+      'portals-grid',
+      'no-portals-results',
+      'btn-reset-portals'
+    );
+    setupRegionGrid(
+      'org-search',
+      'org-region-pills',
+      'orgs-grid',
+      'no-orgs-results',
+      'btn-reset-orgs'
+    );
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDataPage);
+  } else {
+    initDataPage();
+  }
+  document.addEventListener('astro:page-load', initDataPage);
+</script>

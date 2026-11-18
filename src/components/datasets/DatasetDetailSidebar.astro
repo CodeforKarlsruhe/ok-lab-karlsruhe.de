@@ -1,0 +1,126 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import TagPill from '../ui/TagPill.astro';
+import SideCard from '../cards/SideCard.astro';
+import PrintModeMenu from '../print/PrintModeMenu.astro';
+
+interface Props {
+  dataset: CollectionEntry<'datasets'>;
+  publisherString: string;
+  resolvedPublishers: CollectionEntry<'organizations'>[];
+  linkedPortal?: CollectionEntry<'portale'> | null;
+  resolvedPersons: CollectionEntry<'persons'>[];
+  usingIdeas: CollectionEntry<'projects'>[];
+}
+
+const { dataset, publisherString, resolvedPublishers, linkedPortal, resolvedPersons, usingIdeas } =
+  Astro.props;
+---
+
+<div class="sidebar-col">
+  <SideCard title="Fakten">
+    <div class="fact-row">
+      <div class="fact-label">Herausgeber</div>
+      <div class="fact-value">
+        {resolvedPublishers.length > 0 ? (
+          <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+            {resolvedPublishers.map((org) =>
+              org.data.url ? (
+                <a
+                  href={org.data.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="link-inline"
+                >
+                  <span>{org.data.name}</span> <span class="link-arrow">🡵</span>
+                </a>
+              ) : (
+                <span>{org.data.name}</span>
+              )
+            )}
+          </div>
+        ) : (
+          publisherString
+        )}
+      </div>
+    </div>
+
+    {linkedPortal && (
+      <div class="fact-row">
+        <div class="fact-label">Herkunfts-Portal</div>
+        <div class="fact-value">
+          <a href={`/daten/portale/${linkedPortal.id}`} class="link-inline">
+            <span>{linkedPortal.data.title}</span>
+          </a>
+        </div>
+      </div>
+    )}
+
+    {dataset.data.size && (
+      <div class="fact-row">
+        <div class="fact-label">Dateigröße</div>
+        <div class="fact-value">{dataset.data.size}</div>
+      </div>
+    )}
+
+    <div class="fact-row">
+      <div class="fact-label">Verfügbare Formate</div>
+      <div class="formats-row">
+        {dataset.data.formats.map((f) => (
+          <TagPill
+            variant="format"
+            href={`/daten?format=${encodeURIComponent(f.trim().toLowerCase())}`}
+          >
+            {f.toUpperCase()}
+          </TagPill>
+        ))}
+      </div>
+    </div>
+
+    <div class="fact-row no-border">
+      <div class="fact-label">Schlagworte</div>
+      <div class="tags-container">
+        {dataset.data.tags.map((t) => (
+          <TagPill variant="tag" href={`/suche?tag=${encodeURIComponent(t)}`}>
+            {t}
+          </TagPill>
+        ))}
+      </div>
+    </div>
+  </SideCard>
+
+  {resolvedPersons.length > 0 && (
+    <SideCard title="Ansprechpersonen">
+      <ul>
+        {resolvedPersons.map((p) => (
+          <li>
+            <a
+              href={`/suche?person=${p.id}`}
+              class="link-subtle"
+              title={`Alle Aktivitäten von ${p.data.name} anzeigen`}
+            >
+              {p.data.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </SideCard>
+  )}
+
+  {usingIdeas.length > 0 && (
+    <SideCard title="Ideenschmiede">
+      <ul>
+        {usingIdeas.map((idea) => (
+          <li>
+            <a href={`/projekte/${idea.id}`} class="link-subtle">
+              {idea.data.title}
+            </a>
+            <span class="side-card-sub">Mitstreiter gesucht</span>
+          </li>
+        ))}
+      </ul>
+    </SideCard>
+  )}
+
+  <PrintModeMenu />
+</div>

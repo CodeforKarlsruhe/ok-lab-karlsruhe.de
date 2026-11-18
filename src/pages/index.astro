@@ -1,0 +1,83 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SplitHero from '../components/layout/SplitHero.astro';
+import Button from '../components/ui/Button.astro';
+import HomeMeetupsSection from '../components/home/HomeMeetupsSection.astro';
+import HomeProjectsSection from '../components/home/HomeProjectsSection.astro';
+import HomeThemesSection from '../components/home/HomeThemesSection.astro';
+import HomeBlogSection from '../components/home/HomeBlogSection.astro';
+import HomeCtaSection from '../components/home/HomeCtaSection.astro';
+import { getCollection, getEntry } from 'astro:content';
+import { getLighthouseProjects } from '../utils/projects';
+
+const homeEntry = await getEntry('pages', 'home');
+if (!homeEntry) {
+  throw new Error('Startseiten-Konfiguration (src/content/pages/home.json) fehlt.');
+}
+const homeData = homeEntry.data;
+
+const allProjects = await getCollection('projects');
+const rawEvents = await getCollection('events');
+const lighthouseProjects = getLighthouseProjects(allProjects, homeData?.featuredProjects);
+const usedLighthouseIds = new Set(lighthouseProjects.map((p) => p.id));
+---
+
+<Layout title="Offene Daten für ein besseres Karlsruhe" activeNav="home">
+  <SplitHero
+    titleLine1={homeData.hero.titleLine1}
+    titleHighlight={homeData.hero.titleHighlight}
+    lead={homeData.hero.lead}
+    image={homeData.hero.image}
+    imageAlt={homeData.hero.imageAlt}
+  >
+    <Button href="#termine" variant="primary" size="lg">
+      {homeData.hero.primaryButtonText}
+      <svg
+        slot="icon-right"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M5 12h14"></path>
+        <path d="m12 5 7 7-7 7"></path>
+      </svg>
+    </Button>
+    <Button href="#projekte" variant="secondary" size="lg">
+      {homeData.hero.secondaryButtonText}
+    </Button>
+  </SplitHero>
+
+  <HomeMeetupsSection
+    rawEvents={rawEvents}
+    title={homeData.sectionTexts.eventsTitle}
+    highlightEventId={homeData?.meetupBanner?.highlightEvent}
+    highlightBadge={homeData?.meetupBanner?.highlightBadge}
+  />
+
+  <HomeProjectsSection
+    projects={allProjects}
+    title={homeData.sectionTexts.projectsTitle}
+    featuredProjectIds={homeData?.featuredProjects}
+  />
+
+  <HomeThemesSection
+    allProjects={allProjects}
+    focusThemes={homeData.focusThemes}
+    themesTitle={homeData.sectionTexts.themesTitle}
+    usedProjectIds={usedLighthouseIds}
+  />
+
+  <HomeBlogSection />
+
+  <HomeCtaSection
+    title={homeData.sectionTexts.ctaTitle}
+    text={homeData.sectionTexts.ctaDesc}
+    primaryButtonText={homeData.sectionTexts.ctaButtonPlenum}
+    secondaryButtonText={homeData.sectionTexts.ctaButtonAbout}
+  />
+</Layout>

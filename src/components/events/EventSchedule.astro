@@ -1,0 +1,77 @@
+---
+interface ScheduleItem {
+  time: string;
+  title: string;
+  desc?: string;
+}
+
+interface Props {
+  schedule: ScheduleItem[];
+}
+
+const { schedule } = Astro.props;
+---
+
+<div class="schedule-section">
+  <div class="section-title">Zeitplan</div>
+  <ol>
+    {schedule.map((item) => (
+      <li>
+        <time>{item.time}</time>
+        <h4>{item.title}</h4>
+        {item.desc && <p>{item.desc}</p>}
+      </li>
+    ))}
+  </ol>
+</div>
+
+<style>
+  ol {
+    list-style: none;
+    margin: 0;
+    border-left: 2px solid var(--color-primary);
+    padding-left: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  li {
+    position: relative;
+  }
+
+  li::before {
+    content: '';
+    position: absolute;
+    left: -1.85rem;
+    top: 0.35rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    border: 3px solid var(--color-bg);
+  }
+
+  time {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-bottom: 0.25rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 0.25rem 0;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+    margin: 0;
+  }
+</style>

@@ -1,0 +1,59 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SplitHero from '../../components/layout/SplitHero.astro';
+import AboutContent from '../../components/about/AboutContent.astro';
+import Button from '../../components/ui/Button.astro';
+import { getEntry, getCollection } from 'astro:content';
+
+// SSOT: Query regular meetings directly from events
+const allEvents = await getCollection('events');
+const regularMeetings = allEvents.filter((e) => e.data.isRegularMeeting);
+const openLabEvent = regularMeetings.find((e) => e.id === 'open-lab');
+const hacktEvent = regularMeetings.find((e) => e.id === 'okl-hackt');
+
+const calendarFeedUrl =
+  openLabEvent?.data.externalLinks?.find((l) => l.name?.toLowerCase().includes('ical'))?.url ||
+  'https://cloud.ok-lab-karlsruhe.de/remote.php/dav/public-calendars/xGEf5ogpZXaRnZso?export';
+
+const aboutEntry = await getEntry('pages', 'about');
+const about = aboutEntry?.data;
+const contactMail = about?.contactMail || '';
+
+const allPersons = await getCollection('persons');
+const toMember = (m: (typeof allPersons)[0]) => ({
+  id: m.id,
+  name: m.data.name,
+  role: m.data.role,
+  img: m.data.image?.startsWith('/') ? m.data.image : `/${m.data.image || 'assets/images/okl.svg'}`,
+});
+
+const coreMembers = allPersons.filter((m) => m.data.isCoreTeam).map(toMember);
+const teamMembers = coreMembers.length > 0 ? coreMembers : allPersons.map(toMember);
+---
+
+<Layout title="Über uns" activeNav="about">
+  {about?.hero && (
+    <SplitHero
+      titleLine1={about.hero.titleLine1}
+      titleHighlight={about.hero.titleHighlight}
+      lead={about.hero.lead}
+      image={about.hero.image}
+      imageAlt={about.hero.imageAlt || ''}
+    >
+      {about.hero.ctaText && (
+        <Button href={about.hero.ctaUrl || '#treffen'} variant="primary">
+          {about.hero.ctaText}
+        </Button>
+      )}
+    </SplitHero>
+  )}
+
+  <AboutContent
+    about={about}
+    openLabEvent={openLabEvent}
+    hacktEvent={hacktEvent}
+    calendarFeedUrl={calendarFeedUrl}
+    contactMail={contactMail}
+    teamMembers={teamMembers}
+  />
+</Layout>

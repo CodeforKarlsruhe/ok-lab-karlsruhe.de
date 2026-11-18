@@ -1,0 +1,51 @@
+---
+title: Sensor Workshop 2022-2
+series: sensor-workshop
+teaser: Programmieren mit Umweltsensoren – Luftdaten messen und verstehen.
+category: Workshop
+tags:
+  - Sensoren
+  - Umwelt
+  - ZKM
+status: active
+dates:
+  - '2022-09-23'
+startTime: '15:00'
+endTime: '18:00'
+location: ZKM
+image: /assets/images/events/sensors22-2/image.webp
+registrationOpen: false
+personIds:
+  - andreas-kugel
+  - martin-weis
+  - christian-bauer
+organizationIds:
+  - ok-lab-karlsruhe
+projectIds:
+  - nachbarschafts-sensor
+externalLinks:
+  - name: Workshop WiKi
+    url: https://github.com/digital-codes/critical-workshops/wiki/Willkommen
+---
+
+Im September 2022 startet eine neue Reihe Sensor-Workshops am ZKM: _Programmieren mit Umweltsensoren_
+
+Termine, jeweils 15:00-18:00 Uhr:
+
+- [23.9.2022](https://zkm.de/de/fuehrung-workshop/2022/09/programmieren-mit-umweltsensoren)
+- [14.10.2022](https://zkm.de/de/fuehrung-workshop/2022/10/programmieren-mit-umweltsensoren-0)
+- [25.11.2022](https://zkm.de/de/fuehrung-workshop/2022/11/programmieren-mit-umweltsensoren)
+
+Anmeldung über das [ZKM](https://zkm.de/de/search/site?search=programmieren&f%5B0%5D=node%253Afield_event_list_category%3Aworkshop).
+
+### Umgebungssensoren
+
+Seit Jahrhunderten versucht der Mensch, Maschinen zu erschaffen, die das Leben simulieren. Ein zeitgenössisches und typisches Beispiel dazu sind die Sensoren eines Computers. Diese Sensoren entsprechen unseren Sinnesorganen und ermöglichen dem Computer im Grunde eine Art maschinell-sinnliche Erfahrung.
+
+Die Sensoren wandeln Umgebungsereignisse (Klang, Licht, Wärme u.ä.) in digitale Daten, die die Maschine in beliebiger Weise verarbeiten kann. Wie funktionieren diese Sensoren, welche Art Daten stellen sie bereit und wie können wir sie programmieren?
+
+In diesem Sensor-Workshop zeigen wir, wie wir ein Messgerät für Luftdaten selbst zusammenbauen und programmieren können. Dabei erfahren wir, welche Stoffe sich in der Raumluft befinden oder wie z.B. CO2 mit einem Sensor gemessen werden kann. Die Programmierung erfolgt über eine einfache grafische Oberfläche. Vorkenntnisse sind nicht erforderlich, es hilft aber, sich für digitale Technologien zu interessieren.
+
+Es werden zwei Arten von Sensoren verwendet, ein Sensor, der die gesamten [flüchtigen organischen Verbindungen](https://de.wikipedia.org/wiki/Fl%C3%BCchtige_organische_Verbindungen) (_tvoc_, dies ist auch das Kürzel für den Workshop hier im Wiki) in der Raumluft misst, und ein Luftdruck- und Temperatursensor (Baro).
+
+Wir werden auf den Unterlagen zum letzten Workshop aufbauen, die wichtigsten Infos sind im [WiKi](https://github.com/digital-codes/critical-workshops/wiki/Willkommen) zu finden.

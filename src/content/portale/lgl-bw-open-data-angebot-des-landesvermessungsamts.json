@@ -1,0 +1,16 @@
+{
+  "title": "LGL BW: Open Data Angebot des Landesvermessungsamts",
+  "region": "badenWuerttemberg",
+  "url": "https://www.lgl-bw.de/Produkte/Open-Data/",
+  "description": "Landesamt für Geoinformation und Landentwicklung mit amtlichen Raster- und Vektordaten.",
+  "subItems": [
+    {
+      "title": "Open GeoData Portal",
+      "url": "https://opengeodata.lgl-bw.de"
+    },
+    {
+      "title": "Geoportal Baden-Württemberg",
+      "url": "https://www.geoportal-bw.de/"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+---
+interface Props {
+  coc?: any;
+}
+
+const { coc } = Astro.props;
+---
+
+{coc && (coc.title || coc.text) && (
+  <section class="page-section" id="coc">
+    <div class="coc-inner">
+      <div class="coc-icon-wrapper">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+      </div>
+      {coc.title && <h2>{coc.title}</h2>}
+      {coc.text && <p>{coc.text}</p>}
+      {coc.linkUrl && (
+        <a href={coc.linkUrl} target="_blank" rel="noopener noreferrer" class="link-action">
+          <span>
+            {(coc.linkText || 'Vollständigen Verhaltenskodex lesen').replace(/\s*🡵$/, '')}
+          </span>
+          <span class="link-arrow">🡵</span>
+        </a>
+      )}
+    </div>
+  </section>
+)}
+
+<style>
+  .coc-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .coc-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+  }
+
+  h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--color-text);
+    letter-spacing: -0.015em;
+    margin: 0 0 0.75rem 0;
+  }
+
+  p {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.65;
+    margin: 0 0 1.25rem 0;
+  }
+</style>

@@ -1,0 +1,240 @@
+---
+import Button from '../ui/Button.astro';
+
+interface Props {
+  calendarEvents: any[];
+}
+
+const { calendarEvents } = Astro.props;
+---
+
+<section class="tab-view" id="view-calendar">
+  <div class="calendar-card">
+    <header>
+      <div>
+        <h3>Kalenderübersicht</h3>
+        <p>Alle Workshops, Meetups und Plenumstermine des OK Lab Karlsruhe.</p>
+      </div>
+      <div class="ics-subscribe">
+        <Button
+          variant="secondary"
+          size="sm"
+          href="https://cloud.ok-lab-karlsruhe.de/remote.php/dav/public-calendars/xGEf5ogpZXaRnZso?export"
+          external={true}
+        >
+          <svg
+            slot="icon-left"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>ICS-Kalender abonnieren</span>
+          <span class="link-arrow">🡵</span>
+        </Button>
+      </div>
+    </header>
+
+    <div id="calendar-root"></div>
+  </div>
+</section>
+
+<script is:inline define:vars={{ calendarEvents }}>
+  window.__CALENDAR_EVENTS = calendarEvents;
+</script>
+
+<script>
+  // @ts-nocheck
+  function loadScript(src: string) {
+    return new Promise<void>((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load ' + src));
+      document.head.appendChild(s);
+    });
+  }
+
+  let calendarInstance: any = null;
+
+  async function initCalendarIfNeeded() {
+    const calRoot = document.getElementById('calendar-root');
+    if (!calRoot) return;
+    if (calendarInstance && calRoot.children.length > 0) return;
+
+    if (typeof FullCalendar === 'undefined') {
+      try {
+        await loadScript('/assets/vendor/fullcalendar/index.global.min.js');
+        await loadScript('/assets/vendor/fullcalendar/de.global.min.js');
+      } catch (err) {
+        console.error(err);
+        return;
+      }
+    }
+
+    calendarInstance = new FullCalendar.Calendar(calRoot, {
+      initialView: 'dayGridMonth',
+      locale: 'de',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,listMonth',
+      },
+      buttonText: {
+        today: 'Heute',
+        month: 'Monat',
+        week: 'Woche',
+        list: 'Liste',
+      },
+      events: window.__CALENDAR_EVENTS || [],
+      eventColor:
+        getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() ||
+        '#e8581c',
+      eventClick: function (info: any) {
+        if (info.event.url) {
+          info.jsEvent.preventDefault();
+          window.location.href = info.event.url;
+        }
+      },
+    });
+
+    calendarInstance.render();
+  }
+
+  document.addEventListener('events:show-calendar', initCalendarIfNeeded);
+  document.addEventListener('DOMContentLoaded', () => {
+    const viewCalendar = document.getElementById('view-calendar');
+    if (viewCalendar?.classList.contains('active')) {
+      initCalendarIfNeeded();
+    }
+  });
+</script>
+
+<style>
+  .calendar-card {
+    background: var(--color-surface);
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    padding: 2rem;
+    box-shadow: var(--shadow-card);
+    color: var(--color-text);
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+  }
+
+  /* FullCalendar dark mode and design system adaptation */
+  .calendar-card :global(.fc) {
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: var(--color-surface-sunken);
+    --fc-neutral-text-color: var(--color-text-secondary);
+    --fc-border-color: var(--color-border);
+    --fc-button-text-color: var(--color-text);
+    --fc-button-bg-color: var(--color-surface);
+    --fc-button-border-color: var(--color-border);
+    --fc-button-hover-bg-color: var(--color-surface-hover);
+    --fc-button-hover-border-color: var(--color-border-strong);
+    --fc-button-active-bg-color: var(--color-primary);
+    --fc-button-active-border-color: var(--color-primary);
+    --fc-event-bg-color: var(--color-primary);
+    --fc-event-border-color: var(--color-primary);
+    --fc-event-text-color: #ffffff;
+    --fc-today-bg-color: var(--color-primary-light);
+    color: var(--color-text);
+    font-family: inherit;
+  }
+
+  .calendar-card :global(.fc .fc-toolbar-title) {
+    color: var(--color-text);
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .calendar-card :global(.fc .fc-button) {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    box-shadow: var(--shadow-xs);
+    transition: all 150ms ease;
+  }
+
+  .calendar-card :global(.fc .fc-button:hover) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+  }
+
+  .calendar-card :global(.fc .fc-button-primary:not(:disabled).fc-button-active),
+  .calendar-card :global(.fc .fc-button-primary:not(:disabled):active) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #ffffff;
+  }
+
+  .calendar-card :global(.fc .fc-button-primary:disabled) {
+    background: var(--color-surface-sunken);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+  }
+
+  .calendar-card :global(.fc-theme-standard td),
+  .calendar-card :global(.fc-theme-standard th) {
+    border-color: var(--color-border);
+  }
+
+  .calendar-card :global(.fc .fc-col-header-cell-cushion),
+  .calendar-card :global(.fc .fc-daygrid-day-number) {
+    color: var(--color-text);
+  }
+
+  .calendar-card :global(.fc .fc-day-other .fc-daygrid-day-number) {
+    color: var(--color-text-muted);
+  }
+
+  .calendar-card :global(.fc .fc-day-today) {
+    background: var(--color-primary-light) !important;
+  }
+
+  :global(.fc-popover) {
+    background: var(--color-surface-raised) !important;
+    border: 1px solid var(--color-border) !important;
+    box-shadow: var(--shadow-popover) !important;
+    color: var(--color-text) !important;
+  }
+
+  :global(.fc-popover-header) {
+    background: var(--color-surface-sunken) !important;
+    color: var(--color-text) !important;
+  }
+</style>

@@ -1,0 +1,340 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/layout/PageHeader.astro';
+import ViewSwitcher from '../../components/ui/ViewSwitcher.astro';
+import FilterableGrid from '../../components/ui/FilterableGrid.astro';
+import ProjectCard from '../../components/cards/ProjectCard.astro';
+import CtaBanner from '../../components/ui/CtaBanner.astro';
+import { getCollection } from 'astro:content';
+
+const allProjects = await getCollection('projects');
+
+// Sort projects by date descending or title
+const sortedProjects = [...allProjects].sort((a, b) => {
+  const dateA = a.data.date ? new Date(a.data.date).getTime() : 0;
+  const dateB = b.data.date ? new Date(b.data.date).getTime() : 0;
+  return dateB - dateA;
+});
+
+const internalProjects = sortedProjects.filter((p) => p.data.scope === 'internal');
+const externalProjects = sortedProjects.filter((p) => p.data.scope === 'external');
+const ideaProjects = sortedProjects.filter((p) => p.data.scope === 'idea');
+
+const categories = [
+  'Alle',
+  'Urban Data',
+  'Barrierefreiheit',
+  'Politik',
+  'Umwelt & Klima',
+  'Open Data',
+  'Civic Tech',
+];
+
+const tabs = [
+  { id: 'internal', label: 'Eigene Projekte', count: internalProjects.length, active: true },
+  { id: 'external', label: 'Empfohlene Projekte', count: externalProjects.length },
+  { id: 'ideas', label: 'Ideenschmiede', count: ideaProjects.length },
+];
+---
+
+<Layout title="Unsere Projekte" activeNav="projekte">
+  <main class="projects-page">
+    <PageHeader
+      title="Unsere Projekte"
+      description="Open-Source-Software, Karten und Datenanalysen aus Karlsruhe. Entdecke unsere laufenden und abgeschlossenen Initiativen."
+    />
+
+    <div class="main-container">
+      <!-- Toolbar: View Switcher Tabs -->
+      <ViewSwitcher tabs={tabs} id="projects-view-switcher" />
+
+      <!-- Combined Filter, Results & Empty State -->
+      <FilterableGrid
+        mode="flat"
+        searchId="search-input"
+        searchPlaceholder="Projekte durchsuchen..."
+        searchAriaLabel="Projekte durchsuchen"
+        pills={categories.map((cat, idx) => ({
+          id: cat,
+          label: cat,
+          active: idx === 0,
+        }))}
+        pillsId="category-pills"
+        pillsDataAttr="data-cat"
+        hasCustomGrid={true}
+        emptyId="no-results"
+        emptyTitle="Keine Projekte gefunden"
+        emptyDescription="Versuche es mit einem anderen Suchbegriff oder setze die Kategorie-Filter zurück."
+        emptyResetId="btn-reset-filters"
+        emptyResetLabel="Filter zurücksetzen"
+      >
+        <!-- Tab Panel 1: Eigene Projekte -->
+        <section class="tab-panel active" id="panel-internal">
+          <div class="cards-grid" id="internal-cards-grid">
+            {internalProjects.map((p) => (
+              <ProjectCard project={p} scope="internal" />
+            ))}
+          </div>
+        </section>
+
+        <!-- Tab Panel 2: Verwandte & Empfohlene Projekte -->
+        <section class="tab-panel" id="panel-external">
+          <CtaBanner
+            title="Kennst du ein weiteres Open-Source-Projekt für Karlsruhe?"
+            description="Wir machen Werkzeuge aus der Zivilgesellschaft sichtbar. Wenn du selbst ein Projekt entwickelt hast oder eine Initiative kennst, die hier fehlt, gib uns gerne Bescheid."
+            buttonText="Projekt vorschlagen"
+            buttonHref="mailto:info@ok-lab-karlsruhe.de?subject=Projekt-Empfehlung%20f%C3%BCr%20OK%20Lab%20Karlsruhe"
+            variant="outline"
+            icon="mail"
+          />
+
+          <div class="cards-grid" id="external-cards-grid">
+            {externalProjects.map((p) => (
+              <ProjectCard project={p} scope="external" />
+            ))}
+          </div>
+        </section>
+
+        <!-- Tab Panel 3: Ideenschmiede -->
+        <section class="tab-panel" id="panel-ideas">
+          <CtaBanner
+            title="Du hast eine Idee für Karlsruhe?"
+            description="Bring dein Thema gerne bei uns ein. Wir unterstützen dich bei offenen Daten, Prototypen und der Suche nach Mitstreitern."
+            buttonText="Idee vorschlagen"
+            buttonHref="mailto:info@ok-lab-karlsruhe.de?subject=Projektidee%20für%20Karlsruhe"
+            variant="primary"
+            icon="arrow"
+          />
+
+          <div class="cards-grid" id="ideas-cards-grid">
+            {ideaProjects.map((idea) => (
+              <ProjectCard project={idea} scope="idea" />
+            ))}
+          </div>
+        </section>
+      </FilterableGrid>
+    </div>
+  </main>
+</Layout>
+
+<script is:inline define:vars={{ categories }}>
+  function initProjectFilters() {
+    let currentTab = 'internal';
+    let currentCategory = 'Alle';
+    let searchQuery = '';
+
+    const tabBtns = document.querySelectorAll('.view-tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    const searchInput = document.getElementById('search-input');
+    const pillsContainer = document.getElementById('category-pills');
+    const heroDesc = document.querySelector('.hero-desc') || document.getElementById('hero-desc');
+    const noResults = document.getElementById('no-results');
+    const btnReset = document.getElementById('btn-reset-filters');
+
+    const descTexts = {
+      internal:
+        'Wir entwickeln Open-Source-Lösungen, visualisieren offene Daten und bauen Werkzeuge für eine bessere, transparentere Stadtgesellschaft in Karlsruhe. Entdecke unsere aktuellen und vergangenen Initiativen.',
+      external:
+        'Spannende Civic-Tech-Lösungen, Open-Data-Karten und Werkzeuge aus der Community und von Partnern, die wir gerne empfehlen und unterstützen – auch wenn sie nicht vom OK Lab Karlsruhe initiiert wurden.',
+      ideas:
+        'Frische Ideen, Konzepte und Experimente für Karlsruhe. Finde spannende Themen zum Mitmachen oder bringe deine eigene Projektidee in unsere Community ein!',
+    };
+
+    function parseCategoryFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const raw = params.get('category') || params.get('kategorie') || params.get('cat');
+      if (!raw) return null;
+      const normalized = raw.trim().toLowerCase();
+
+      const direct = categories.find((c) => c.toLowerCase() === normalized);
+      if (direct) return direct;
+
+      if (normalized.includes('politik') || normalized.includes('transparenz')) return 'Politik';
+      if (normalized.includes('klima') || normalized.includes('umwelt')) return 'Umwelt & Klima';
+      if (normalized.includes('barriere')) return 'Barrierefreiheit';
+      if (normalized.includes('urban')) return 'Urban Data';
+      if (normalized.includes('open')) return 'Open Data';
+      if (normalized.includes('civic')) return 'Civic Tech';
+
+      return null;
+    }
+
+    function updateUrl() {
+      const url = new URL(window.location.href);
+
+      if (currentCategory && currentCategory !== 'Alle') {
+        url.searchParams.set('category', currentCategory);
+      } else {
+        url.searchParams.delete('category');
+        url.searchParams.delete('kategorie');
+        url.searchParams.delete('cat');
+      }
+
+      if (currentTab === 'ideas') {
+        url.hash = '#ideen';
+      } else if (currentTab === 'external') {
+        url.hash = '#verwandte';
+      } else {
+        url.hash = '';
+      }
+
+      const searchStr = url.searchParams.toString();
+      const newUrl = url.pathname + (searchStr ? '?' + searchStr : '') + url.hash;
+      history.replaceState(null, '', newUrl);
+    }
+
+    function renderPills() {
+      if (!pillsContainer) return;
+      pillsContainer.innerHTML = categories
+        .map(
+          (cat) => `
+        <button type="button" class="filter-pill ${cat === currentCategory ? 'active' : ''}" data-cat="${cat}">
+          <span>${cat}</span>
+        </button>
+      `
+        )
+        .join('');
+
+      pillsContainer.querySelectorAll('.filter-pill').forEach((pill) => {
+        pill.addEventListener('click', () => {
+          pillsContainer
+            .querySelectorAll('.filter-pill')
+            .forEach((p) => p.classList.remove('active'));
+          pill.classList.add('active');
+          currentCategory = pill.dataset.cat || 'Alle';
+          updateUrl();
+          filterCards();
+        });
+      });
+    }
+
+    function filterCards() {
+      const activePanel = document.querySelector('.tab-panel.active');
+      if (!activePanel) return;
+
+      const cards = activePanel.querySelectorAll('.project-card');
+      let visibleCount = 0;
+
+      const targetCat = currentCategory.trim().toLowerCase();
+
+      cards.forEach((card) => {
+        const cardCat = (card.dataset.category || '').trim().toLowerCase();
+        const searchCorpus = (card.dataset.search || '').toLowerCase();
+
+        const matchesCat = targetCat === 'alle' || cardCat === targetCat;
+        const matchesSearch = !searchQuery || searchCorpus.includes(searchQuery);
+
+        if (matchesCat && matchesSearch) {
+          card.style.display = '';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      if (noResults) {
+        noResults.classList.toggle('hidden', visibleCount > 0);
+      }
+    }
+
+    function switchTab(tabId) {
+      currentTab = tabId;
+
+      tabBtns.forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.tab === tabId);
+      });
+      tabPanels.forEach((panel) => {
+        panel.classList.toggle('active', panel.id === `panel-${tabId}`);
+      });
+
+      if (heroDesc && descTexts[tabId]) {
+        heroDesc.textContent = descTexts[tabId];
+      }
+
+      if (searchInput) {
+        if (tabId === 'ideas') {
+          searchInput.placeholder = 'Ideen durchsuchen...';
+        } else if (tabId === 'external') {
+          searchInput.placeholder = 'Verwandte Projekte durchsuchen...';
+        } else {
+          searchInput.placeholder = 'Projekte durchsuchen...';
+        }
+      }
+
+      renderPills();
+      filterCards();
+    }
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        switchTab(tab);
+        updateUrl();
+      });
+    });
+
+    function syncFromUrl() {
+      const hash = window.location.hash.toLowerCase();
+      let targetTab = 'internal';
+      if (hash === '#ideen' || hash === '#ideas') {
+        targetTab = 'ideas';
+      } else if (hash === '#verwandte' || hash === '#extern' || hash === '#community') {
+        targetTab = 'external';
+      }
+
+      const catFromUrl = parseCategoryFromUrl();
+      currentCategory = catFromUrl || 'Alle';
+
+      const params = new URLSearchParams(window.location.search);
+      const urlQuery = params.get('q') || params.get('search') || '';
+      searchQuery = urlQuery.trim().toLowerCase();
+      if (searchInput) {
+        searchInput.value = urlQuery;
+        const wrap = searchInput.closest('.expandable-search');
+        if (wrap) {
+          if (urlQuery) {
+            wrap.classList.add('open');
+          } else {
+            wrap.classList.remove('open');
+          }
+        }
+      }
+
+      switchTab(targetTab);
+    }
+
+    window.addEventListener('hashchange', syncFromUrl);
+    window.addEventListener('popstate', syncFromUrl);
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value.trim().toLowerCase();
+        filterCards();
+      });
+    }
+
+    if (btnReset) {
+      btnReset.addEventListener('click', () => {
+        if (searchInput) {
+          searchInput.value = '';
+          const wrap = searchInput.closest('.expandable-search');
+          if (wrap) wrap.classList.remove('open');
+        }
+        searchQuery = '';
+        currentCategory = 'Alle';
+        updateUrl();
+        renderPills();
+        filterCards();
+      });
+    }
+
+    // Run initial sync on page load
+    syncFromUrl();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initProjectFilters);
+  } else {
+    initProjectFilters();
+  }
+</script>

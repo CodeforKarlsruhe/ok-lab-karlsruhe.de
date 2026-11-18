@@ -1,0 +1,82 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ProtocolSheet from '../../components/protocols/ProtocolSheet.astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { parseDateSafe } from '../../utils/events';
+
+export async function getStaticPaths() {
+  const protocols = await getCollection('protocols');
+  return protocols.map((proto) => ({
+    params: { slug: proto.id },
+    props: { proto },
+  }));
+}
+
+interface Props {
+  proto: CollectionEntry<'protocols'>;
+}
+
+const { proto } = Astro.props;
+const { Content } = await render(proto);
+
+const allProjects = await getCollection('projects');
+const allPersons = await getCollection('persons');
+const allEvents = await getCollection('events');
+
+const facilitator = proto.data.facilitatorId
+  ? {
+      id: proto.data.facilitatorId,
+      name:
+        allPersons.find((p) => p.id === proto.data.facilitatorId)?.data.name ||
+        proto.data.facilitatorId,
+    }
+  : null;
+
+const scribe = proto.data.scribeId
+  ? {
+      id: proto.data.scribeId,
+      name: allPersons.find((p) => p.id === proto.data.scribeId)?.data.name || proto.data.scribeId,
+    }
+  : null;
+
+const attendeesList = (proto.data.attendeeIds || []).map((id) => ({
+  id,
+  name: allPersons.find((p) => p.id === id)?.data.name || id,
+}));
+
+const linkedEvent = proto.data.eventId ? allEvents.find((e) => e.id === proto.data.eventId) : null;
+
+const typeLabels: Record<string, string> = {
+  plenum: 'Plenum',
+  vorstand: 'Vorstandssitzung',
+  arbeitsgruppe: 'Arbeitsgruppe',
+  mitgliederversammlung: 'Mitgliederversammlung',
+};
+
+const formattedDate = parseDateSafe(proto.data.date).toLocaleDateString('de-DE', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+});
+
+const linkedProjects = (proto.data.linkedProjectIds || []).map((pRef) => {
+  const id = typeof pRef === 'string' ? pRef : pRef.id;
+  const match = allProjects.find((p) => p.id === id);
+  return { id, title: match ? match.data.title : id };
+});
+---
+
+<Layout title={proto.data.title} activeNav="protokolle">
+  <ProtocolSheet
+    proto={proto}
+    formattedDate={formattedDate}
+    typeLabel={typeLabels[proto.data.type] || proto.data.type}
+    facilitator={facilitator}
+    scribe={scribe}
+    attendeesList={attendeesList}
+    linkedEvent={linkedEvent}
+    linkedProjects={linkedProjects}
+  >
+    <Content />
+  </ProtocolSheet>
+</Layout>

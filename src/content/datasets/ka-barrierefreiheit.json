@@ -1,0 +1,14 @@
+{
+  "title": "Barrierefreiheit",
+  "teaser": "Aggregierte Daten zur Barrierefreiheit in Karlsruhe aus OpenStreetMap, Stadtquellen und Sozialhelden.",
+  "description": "Information zu Barrierefreiheit in Karlsruhe von verschiedenen Quellen. TP, Liegenschaftsamt, AccessibilityMap (Sozialhelden), OSM. In den Beispieldaten des Liegenschaftsamtes wird erkennbar, welche Angaben wichtig sind.",
+  "publisherIds": ["stadt-karlsruhe-liegenschaftsamt", "sozialhelden", "openstreetmap"],
+  "url": "https://my.hidrive.com/share/10.0hxq4we#$/barrierefrei",
+  "tags": ["Barrierefreiheit"],
+  "formats": ["geojson", "sonstige"],
+  "portalId": "geoportal-karlsruhe",
+  "size": "Unterschiedlich",
+  "personIds": ["andreas-kugel"],
+  "useCases": "Status Barrierefreiheit in Karlsruhe, z.B. Zugänglichkeit von öffentlichen Gebäuden und Nahverkehr",
+  "image": "/assets/images/datasets/ka-barrierefreiheit/image.webp"
+}

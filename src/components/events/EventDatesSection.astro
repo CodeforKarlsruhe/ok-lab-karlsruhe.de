@@ -1,0 +1,208 @@
+---
+import Button from '../ui/Button.astro';
+import ArrowRight from '../ui/ArrowRight.astro';
+import type { ParsedEventDate } from '../../utils/events';
+
+interface Props {
+  event: any;
+  upcomingDates: ParsedEventDate[];
+  pastDates: ParsedEventDate[];
+}
+
+const { event, upcomingDates, pastDates } = Astro.props;
+---
+
+{upcomingDates.length > 0 && (
+  <div class="dates-cards-section">
+    <h3 class="section-title">Nächste Termine</h3>
+    <div class="dates-cards-grid">
+      {upcomingDates.map((d) => (
+        <article>
+          <div class="date-card-header">
+            <div class="date-badge-small">
+              <span class="month">{d.month}</span>
+              <span class="day">{d.day}</span>
+            </div>
+            <div class="date-card-title-group">
+              <h4>
+                {d.weekday}, {d.formatted}
+              </h4>
+              <span class="date-card-time">{d.time}</span>
+            </div>
+          </div>
+
+          <div class="date-card-actions">
+            {event.registrationOpen && event.registrationUrl && (
+              <Button variant="primary" size="sm" href={event.registrationUrl} external={true}>
+                <span>Pretix Anmeldung</span>
+                <span class="link-arrow">🡵</span>
+              </Button>
+            )}
+            <a
+              href={d.icsUrl}
+              download={`${event.id}-${d.iso}.ics`}
+              class="btn btn-secondary btn-sm ics-download-btn"
+              title="Als Kalendertermin (.ics) herunterladen"
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>Zum Kalender hinzufügen</span>
+            </a>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+)}
+
+{pastDates.length > 0 && (
+  <div class="dates-cards-section past-section">
+    <div class="related-header">
+      <h3>Vergangene Termine</h3>
+      {event.id === 'open-lab' && (
+        <a href="/protokolle" class="link-action">
+          <span>Protokolle ansehen</span>
+          <ArrowRight />
+        </a>
+      )}
+    </div>
+    <div class="dates-cards-grid past-grid">
+      {pastDates.map((d) => (
+        <div class="date-badge-small past">
+          <span class="month">{d.month}</span>
+          <span class="day">{d.day}</span>
+          <span class="year">{d.year}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+<style>
+  .dates-cards-section {
+    margin-top: 2rem;
+  }
+
+  .dates-cards-section.past-section {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--color-border);
+  }
+
+  .dates-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1rem;
+  }
+
+  .dates-cards-grid.past-grid {
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 1rem;
+  }
+
+  article {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.85rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .date-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .date-badge-small {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    height: 48px;
+    background: var(--color-primary-light, rgba(232, 88, 28, 0.08));
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 0.2rem;
+    flex-shrink: 0;
+  }
+
+  .date-badge-small.past {
+    background: var(--color-surface);
+  }
+
+  .date-badge-small .month,
+  .date-badge-small .year {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .date-badge-small.past .month {
+    color: var(--color-text-secondary);
+  }
+
+  .date-badge-small .day {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--color-text);
+    line-height: 1.1;
+  }
+
+  .date-card-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--color-text);
+    line-height: 1.25;
+  }
+
+  .date-card-time {
+    font-size: 0.825rem;
+    color: var(--color-text-secondary);
+  }
+
+  .date-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border-subtle, var(--color-border));
+  }
+
+  .ics-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+</style>

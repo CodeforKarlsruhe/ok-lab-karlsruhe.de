@@ -1,0 +1,15 @@
+{
+  "title": "Digitalstrategie der Stadt Karlsruhe",
+  "teaser": "Die offizielle, 31-seitige Digitalstrategie-Publikation der Stadt Karlsruhe als PDF.",
+  "description": "Die offizielle Digitalstrategie-Veröffentlichung der Stadt.",
+  "publisherIds": ["stadt-karlsruhe-it"],
+  "url": "https://web1.karlsruhe.de/ris/oparl/bodies/0001/downloadfiles/00635290.pdf",
+  "tags": ["Open Data", "Verwaltung"],
+  "formats": ["pdf"],
+  "portalId": "transparenzportal-der-stadt-karlsruhe",
+  "size": "31 Seiten",
+  "personIds": [],
+  "useCases": "Diskussion und Weiterentwicklung der Digitalstrategie",
+  "image": "/assets/images/datasets/digitalstrategie-karlsruhe/image.webp",
+  "imageAlt": "Konzeption und Redaktion: Markus Losert, Nora Kaiber, Die Strategiemanufaktur © Layout: Nora Kaiber, Cindy Streeck Titelbildcollage:  Designed by wirestock, macrovector Freepik "
+}

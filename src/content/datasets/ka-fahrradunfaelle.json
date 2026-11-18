@@ -1,0 +1,14 @@
+{
+  "title": "Fahrradunfalldaten",
+  "teaser": "Georeferenzierte Unfalldaten mit Fahrradbeteiligung im Stadt- und Landkreis Karlsruhe ab 2017.",
+  "description": "Georeferenzierte Unfalldaten mit Fahrradbeteiligung. Die Liste der Verkehrsunfälle mit Fahrradbeteiligung in Stadt- und Landkreis Karlsruhe kommt direkt vom Polizeipräsidium Karlsruhe und wurde über Frag den Staat angefragt. Passwort: odd2025",
+  "publisherIds": ["polizeipraesidium-karlsruhe"],
+  "url": "https://my.hidrive.com/share/7tham.o1ma#$/",
+  "tags": ["Verkehrssicherheit", "Geodaten"],
+  "formats": ["gpkg", "geojson", "xlsx"],
+  "portalId": "statistikportal-unfallatlas",
+  "size": "2017 bis 2023",
+  "personIds": ["max-liesegang"],
+  "useCases": "Unfallschwerpunkte-Analyse",
+  "image": "/assets/images/datasets/ka-fahrradunfaelle/image.webp"
+}

@@ -1,0 +1,459 @@
+---
+import ExpandableSearch from './ExpandableSearch.astro';
+import FilterDropdown from './FilterDropdown.astro';
+
+export interface FilterPill {
+  id: string;
+  label: string;
+  count?: number;
+  active?: boolean;
+  [key: string]: any;
+}
+
+export interface FilterGroupOption {
+  id: string;
+  label: string;
+  [key: string]: any;
+}
+
+export interface FilterGroup {
+  id: string;
+  label: string; // e.g. "Thema"
+  options: Array<string | FilterGroupOption>;
+  activeValue?: string;
+}
+
+interface Props {
+  mode?: 'flat' | 'grouped' | 'search';
+  searchId?: string;
+  searchPlaceholder?: string;
+  searchAriaLabel?: string;
+  searchValue?: string;
+  pills?: FilterPill[];
+  pillsId?: string;
+  pillsDataAttr?: string;
+  groups?: FilterGroup[];
+  class?: string;
+}
+
+const {
+  mode = 'flat',
+  searchId = 'search-input',
+  searchPlaceholder = 'Durchsuchen...',
+  searchAriaLabel = 'Durchsuchen',
+  searchValue = '',
+  pills = [],
+  pillsId = 'filter-pills',
+  pillsDataAttr = 'data-filter',
+  groups = [],
+  class: className = '',
+} = Astro.props;
+---
+
+<div class:list={['filter-bar-component', `mode-${mode}`, className]}>
+  {mode === 'search' ? (
+    /* --- Big Search Mode (Search Page) --- */
+    <div class="search-mode-container">
+      <div class="big-search-box">
+        <div class="big-search-wrap">
+          <svg
+            class="big-search-icon"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="search"
+            id={searchId}
+            class="big-search-input"
+            placeholder={searchPlaceholder}
+            aria-label={searchAriaLabel}
+            value={searchValue}
+            autocomplete="off"
+          />
+          <button
+            type="button"
+            id={`${searchId}-clear`}
+            class="big-search-clear-btn hidden"
+            aria-label="Suche zurücksetzen"
+            title="Suche zurücksetzen"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="search-mode-controls-row">
+        {pills.length > 0 && (
+          <div class="filter-pills-row" id={pillsId} role="tablist">
+            {pills.map((pill) => (
+              <button
+                type="button"
+                class:list={['filter-pill', { active: pill.active }]}
+                {...{ [pillsDataAttr]: pill.id }}
+              >
+                <span>{pill.label}</span>
+                {pill.count !== undefined && (
+                  <span class="pill-count" id={`count-${pill.id}`}>
+                    {pill.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div class="search-mode-right">
+          <slot name="right" />
+        </div>
+      </div>
+
+      <slot name="status" />
+    </div>
+  ) : (
+    /* --- Flat or Grouped Mode (Projects, Events, Datasets) --- */
+    <div class="filter-row">
+      <div class="filter-row-left">
+        <ExpandableSearch
+          id={searchId}
+          placeholder={searchPlaceholder}
+          ariaLabel={searchAriaLabel}
+        />
+
+        {mode === 'grouped' ? (
+          /* Grouped Filters: Search | Topic ⌄ | Format ⌄ */
+          <div class="grouped-filters" id="grouped-filters-container">
+            {groups.map((group) => {
+              const normOptions = group.options.map((opt) =>
+                typeof opt === 'string' ? { id: opt, label: opt } : { id: opt.id, label: opt.label }
+              );
+              const activeVal = group.activeValue || 'Alle';
+
+              return (
+                <FilterDropdown
+                  id={group.id}
+                  label={group.label}
+                  options={normOptions}
+                  activeValue={activeVal}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          /* Flat Filter Pills */
+          <div class="category-pills" id={pillsId}>
+            {pills.map((pill) => (
+              <button
+                type="button"
+                class:list={['filter-pill', { active: pill.active }]}
+                {...{ [pillsDataAttr]: pill.id }}
+              >
+                <span>{pill.label}</span>
+                {pill.count !== undefined && (
+                  <span class="pill-count" id={`count-${pill.id}`}>
+                    {pill.count}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div class="filter-row-right">
+        <slot name="right" />
+      </div>
+    </div>
+  )}
+</div>
+
+<script>
+  function setupBigSearch() {
+    document.querySelectorAll('.big-search-box').forEach((box) => {
+      if ((box as any).__bigSearchInit) return;
+      (box as any).__bigSearchInit = true;
+
+      const input = box.querySelector('.big-search-input') as HTMLInputElement | null;
+      const clearBtn = box.querySelector('.big-search-clear-btn') as HTMLButtonElement | null;
+      if (!input || !clearBtn) return;
+
+      const updateClearVisibility = () => {
+        clearBtn.classList.toggle('hidden', !input.value.trim());
+      };
+
+      input.addEventListener('input', updateClearVisibility);
+      updateClearVisibility();
+
+      clearBtn.addEventListener('click', () => {
+        input.value = '';
+        updateClearVisibility();
+        input.focus();
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+    });
+  }
+
+  setupBigSearch();
+  document.addEventListener('astro:page-load', setupBigSearch);
+</script>
+
+<style>
+  .filter-bar-component {
+    width: 100%;
+    margin-bottom: var(--space-6, 1.5rem);
+    position: relative;
+    z-index: 25;
+  }
+
+  /* --- Flat / Grouped Row --- */
+  .filter-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .filter-row-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .filter-row-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .search-mode-controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .search-mode-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+
+  :global(.search-status-bar) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  :global(.status-text) {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- Category Pills --- */
+  .category-pills,
+  .filter-pills-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 2px 0;
+  }
+
+  .category-pills::-webkit-scrollbar,
+  .filter-pills-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  :global(.filter-pill) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 32px;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-md, 6px);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    box-sizing: border-box;
+    transition:
+      border-color 0.15s,
+      background-color 0.15s,
+      color 0.15s;
+  }
+
+  :global(.filter-pill:hover) {
+    border-color: var(--color-border-hover);
+    color: var(--color-text);
+    background: var(--color-surface-raised);
+  }
+
+  :global(.filter-pill.active) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #ffffff;
+    font-weight: 500;
+  }
+
+  :global(.filter-pill .pill-count) {
+    font-size: 0.72rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    background: var(--color-surface-sunken);
+    color: inherit;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  :global(.filter-pill.active .pill-count) {
+    background: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+  }
+
+  /* --- Grouped Filters (Search | Thema ⌄ | Format ⌄) --- */
+  .grouped-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  /* --- Big Search Mode (Search Page) --- */
+  .search-mode-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .big-search-box {
+    width: 100%;
+  }
+
+  .big-search-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md, 8px);
+    box-shadow: var(--shadow-sm);
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .big-search-wrap:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+  }
+
+  .big-search-icon {
+    position: absolute;
+    left: 1rem;
+    color: var(--color-text-muted);
+    pointer-events: none;
+  }
+
+  .big-search-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 2.5rem 0 2.75rem;
+    border: none;
+    background: transparent;
+    color: var(--color-text);
+    font-size: var(--text-base, 1rem);
+    outline: none;
+  }
+
+  .big-search-input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .big-search-clear-btn {
+    position: absolute;
+    right: 0.85rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    border: none;
+    background: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all 150ms ease;
+  }
+
+  .big-search-clear-btn:hover {
+    color: var(--color-text);
+    background: var(--color-surface-raised);
+  }
+
+  .big-search-clear-btn.hidden {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .filter-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.75rem;
+    }
+
+    .filter-row-left {
+      width: 100%;
+    }
+
+    .filter-row-right {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
+</style>

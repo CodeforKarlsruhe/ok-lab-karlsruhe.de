@@ -1,0 +1,14 @@
+{
+  "title": "Nextbike Datensatz",
+  "teaser": "Umfangreiches 2.5 TB Archiv von Nextbike-Stationen zur Analyse und Visualisierung der Bike-Sharing-Nutzung.",
+  "description": "Historische Daten von Nextbike-Stationen via REST-Schnittstelle gesammelt (seit 2022). Seit 2022 sammeln wir alle 5 Minuten Nextbike-Daten aus ganz Deutschland. Der Datensatz bietet Raum für kreative Analysen, Visualisierungen und neue Erkenntnisse rund um Fahrradmobilität. Alternativ könnt ihr auch live eigene weltweite Daten sammeln.",
+  "publisherIds": ["fzi"],
+  "url": "https://api.nextbike.net/maps/nextbike-live.json?countries=de",
+  "tags": ["Mobilität", "Sharing Economy", "Geodaten"],
+  "formats": ["json"],
+  "portalId": "mobidata-bw",
+  "size": "2.5 TB (3 Jahre, 5-Min-Intervalle)",
+  "personIds": [],
+  "useCases": "Bike-Sharing Analysen",
+  "image": "/assets/images/datasets/ka-nextbike/image.webp"
+}

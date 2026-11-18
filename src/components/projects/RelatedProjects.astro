@@ -1,0 +1,57 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import ProjectCard from '../cards/ProjectCard.astro';
+import ArrowRight from '../ui/ArrowRight.astro';
+import { getRelatedProjects } from '../../utils/projects';
+
+interface Props {
+  project?: CollectionEntry<'projects'>;
+  currentProject?: CollectionEntry<'projects'>;
+  allProjects?: CollectionEntry<'projects'>[];
+  limit?: number;
+  title?: string;
+  class?: string;
+}
+
+const {
+  project: propProject,
+  currentProject: propCurrentProject,
+  allProjects: propAllProjects,
+  limit = 3,
+  title: customTitle,
+  class: className,
+} = Astro.props;
+
+const project = propCurrentProject || propProject;
+if (!project) {
+  throw new Error('RelatedProjects requires either `project` or `currentProject` prop.');
+}
+
+const allProjects = propAllProjects ?? (await getCollection('projects'));
+const { projects: similarProjects, title: autoTitle } = getRelatedProjects(
+  project,
+  allProjects,
+  limit
+);
+const title = customTitle || autoTitle;
+const isIdea = project.data.scope === 'idea';
+---
+
+{similarProjects.length > 0 && (
+  <section class:list={['related-section', className]} aria-labelledby="related-projects-heading">
+    <div class="related-header">
+      <h2 id="related-projects-heading">{title}</h2>
+      <a href={isIdea ? '/projekte#ideen' : '/projekte'} class="link-action">
+        <span>{isIdea ? 'Alle Ideen' : 'Alle Projekte'}</span>
+        <ArrowRight />
+      </a>
+    </div>
+
+    <div class="related-grid">
+      {similarProjects.map((sp) => (
+        <ProjectCard project={sp} slim={true} />
+      ))}
+    </div>
+  </section>
+)}

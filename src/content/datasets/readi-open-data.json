@@ -1,0 +1,14 @@
+{
+  "title": "Re@di: Open Data Portal für Ettlingen, Baden-Baden und weitere Städte",
+  "teaser": "Aggregierte Datensätze der re@di-Kooperation (Ettlingen, Baden-Baden, Bruchsal u.a.).",
+  "description": "Das re@di-OpenDataPortal (https://opendata.readi.de/) ist die zentrale Anlaufstelle für offene Daten und Dokumente 8 großer Kreisstädte und 1 Stadtkreis rund um Karlsruhe (Baden-Baden, Bretten, Bruchsal, Ettlingen, Rastatt, Rheinstetten und Stutensee). Zu den Datensätzen gehören unter anderem Trinkwasseranalysen, Wetter und Sensorikdaten, Wahlergebnisse, der Haushaltsplan, Bevölkerungsstatistiken und ein Mietspiegel. Passwort: odd2025",
+  "publisherIds": ["stadt-ettlingen"],
+  "url": "https://my.hidrive.com/#$/oklab-shared/readi",
+  "tags": ["Open Data", "Verwaltung"],
+  "formats": ["sonstige", "csv", "pdf", "xlsx", "geojson"],
+  "portalId": "re-di-opendataportal",
+  "size": "133 Datensätze",
+  "personIds": ["oliver-hermann"],
+  "useCases": "Open Data Analysen",
+  "image": "/assets/images/datasets/readi-open-data/image.webp"
+}

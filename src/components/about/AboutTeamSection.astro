@@ -1,0 +1,53 @@
+---
+import PersonGrid, { type PersonGridItem } from '../ui/PersonGrid.astro';
+
+interface Props {
+  teamMembers: PersonGridItem[];
+}
+
+const { teamMembers } = Astro.props;
+---
+
+<section class="page-section">
+  <div class="section-container">
+    <header>
+      <h2>Unser Kernteam</h2>
+      <p>Engagierte Menschen aus Entwicklung, Design, Datenanalyse und Stadtgestaltung.</p>
+    </header>
+
+    <PersonGrid persons={teamMembers} />
+
+    <p class="section-suffix">
+      Sowie zahlreiche weitere Freiwillige, die sich projektbezogen oder bei Veranstaltungen
+      einbringen.
+    </p>
+  </div>
+</section>
+
+<style>
+  header {
+    margin-bottom: 2.5rem;
+  }
+
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.35rem 0;
+  }
+
+  header p {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .section-suffix {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin-top: 3rem;
+    text-align: center;
+  }
+</style>

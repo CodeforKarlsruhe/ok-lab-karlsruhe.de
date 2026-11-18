@@ -1,0 +1,14 @@
+{
+  "title": "Mobilität",
+  "teaser": "Umfangreiche Mobilitätsdaten des Tiefbauamts und von Mobidata-BW zu Leihrädern, Parkhäusern und Baustellen.",
+  "description": "Das Tiefbauamt Karlsruhe stellt über das Transparenzportal eine Reihe von Daten zum Thema Mobilität bereit. Diese Daten werden auch an die überregionale Stelle Mobidata-BW geliefert. Zu den Daten des TBA zählen folgende Themenbereiche: Sharing (Leihräder, E-Scooter, Carsharing), Parkhäuser (Belegungsdaten), Baustellen (Daten zu Baustellen und Sperrungen). Mobidata-BW liefert Daten über eine CKAN-API aus. Diese haben wir abgerufen, es stehen Daten und Metadaten zur Verfügung",
+  "publisherIds": ["stadt-karlsruhe-tiefbau", "mobidata-bw"],
+  "url": "https://my.hidrive.com/share/10.0hxq4we#$/Mobilit%C3%A4t",
+  "tags": ["Mobilität", "Open Data", "Verwaltung"],
+  "formats": ["csv", "json", "sonstige"],
+  "portalId": "mobidata-bw",
+  "size": "TBA: ca. 50 Datensätze. Mobidata: ca. 800 Datensätze",
+  "personIds": ["marco-schrumpf", "patrick-schultz", "andreas-kugel"],
+  "useCases": "Analysen rund um Mobilität in Karlsruhe und BW",
+  "image": "/assets/images/datasets/ka-mobilitaet/image.webp"
+}

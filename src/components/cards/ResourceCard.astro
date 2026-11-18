@@ -1,0 +1,79 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import EntityCard from './EntityCard.astro';
+
+const REGION_LABELS: Record<string, string> = {
+  karlsruhe: 'Karlsruhe',
+  badenWuerttemberg: 'Baden-Württemberg',
+  deutschland: 'Deutschland',
+};
+
+interface SubItem {
+  title: string;
+  url?: string;
+  description?: string;
+}
+
+interface Props {
+  resource?: CollectionEntry<'portale'> | CollectionEntry<'organizations'> | Record<string, any>;
+  title?: string;
+  url?: string;
+  description?: string;
+  badge?: string;
+  subItems?: SubItem[];
+  slim?: boolean;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  resource,
+  title: propTitle,
+  url: propUrl,
+  description: propDescription,
+  badge: propBadge,
+  subItems: propSubItems,
+  slim = false,
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+const raw = resource
+  ? 'data' in resource && resource.data
+    ? { id: resource.id, ...resource.data }
+    : resource
+  : {};
+
+const isPortal = Boolean(resource && 'collection' in resource && resource.collection === 'portale');
+const title = propTitle ?? raw.title ?? raw.name ?? '';
+const url = propUrl ?? (isPortal && raw.id ? `/daten/portale/${raw.id}` : (raw.url ?? '#'));
+const description = propDescription ?? raw.description;
+const subItems = propSubItems ?? raw.subItems ?? [];
+const region = raw.region || 'karlsruhe';
+const badge = propBadge ?? REGION_LABELS[region] ?? region;
+
+const searchStr =
+  `${title} ${description || ''} ${badge || ''} ${subItems.map((s: SubItem) => s.title).join(' ')}`.toLowerCase();
+
+const externalLinks =
+  !isPortal && subItems && subItems.length > 0
+    ? {
+        title: 'Enthaltene Datensätze & Tools:',
+        items: subItems,
+      }
+    : undefined;
+---
+
+<EntityCard
+  mode="image"
+  slim={slim}
+  title={title}
+  url={url}
+  category={badge}
+  description={description}
+  externalLinks={externalLinks}
+  class={`resource-item-card ${className}`}
+  data-region={rest['data-region'] ?? (resource ? region : undefined)}
+  data-search={searchStr}
+  {...rest}
+/>

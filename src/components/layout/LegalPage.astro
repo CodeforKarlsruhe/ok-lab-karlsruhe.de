@@ -1,0 +1,227 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from './PageHeader.astro';
+import PrintBrandHeader from './PrintBrandHeader.astro';
+import Button from '../ui/Button.astro';
+import ProseContent from '../ui/ProseContent.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  lastUpdated?: string | Date;
+  showPrintButton?: boolean;
+}
+
+const { title, description, lastUpdated, showPrintButton = false } = Astro.props;
+---
+
+<Layout title={title} description={description}>
+  <main>
+    <PageHeader
+      title={title}
+      description={description}
+      note={lastUpdated ? `Stand: ${lastUpdated}` : undefined}
+      class="legal-page-header"
+    />
+
+    <div class="legal-container">
+      {showPrintButton && (
+        <div class="legal-toolbar">
+          <Button variant="primary" id="btn-print-legal">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            <span>Drucken / PDF</span>
+          </Button>
+        </div>
+      )}
+
+      <article>
+        <PrintBrandHeader printOnly={true} />
+        <div class="print-doc-title-block">
+          <h1>{title}</h1>
+          {lastUpdated && <div class="print-doc-meta">Stand: {lastUpdated}</div>}
+        </div>
+        <ProseContent class="legal-prose">
+          <slot />
+        </ProseContent>
+      </article>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btnPrint = document.getElementById('btn-print-legal');
+    btnPrint?.addEventListener('click', () => {
+      window.print();
+    });
+  });
+</script>
+
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 2cm 1.5cm 1.8cm 1.5cm;
+  }
+
+  @page :first {
+    margin-top: 1.2cm;
+  }
+
+  main {
+    background: var(--color-bg);
+    min-height: 80vh;
+  }
+
+  .legal-container {
+    max-width: calc(210mm + 3rem);
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+  }
+
+  .legal-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.25rem;
+  }
+
+  .print-doc-title-block {
+    display: none;
+  }
+
+  article {
+    font-family: var(--font-family-doc);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 2cm 1.5cm 1.8cm 1.5cm;
+    box-shadow: var(--shadow-sm);
+    color: var(--color-text);
+  }
+
+  @media (max-width: 640px) {
+    article {
+      padding: 1.5rem;
+    }
+  }
+
+  @media print {
+    :global(.legal-page-header),
+    .legal-toolbar {
+      display: none !important;
+    }
+
+    main {
+      background: white !important;
+      min-height: 0 !important;
+    }
+
+    .legal-container {
+      max-width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    article {
+      font-family: var(--font-family-doc) !important;
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      background: white !important;
+      color: #1a1a1a !important;
+    }
+
+    .print-doc-title-block {
+      display: block !important;
+      margin-bottom: 1.2em;
+    }
+
+    .print-doc-title-block h1 {
+      font-size: 18pt;
+      font-weight: 700;
+      line-height: 1.22;
+      margin: 0;
+      color: #1a1a1a !important;
+    }
+
+    .print-doc-meta {
+      font-size: 8.5pt;
+      color: #4b5563 !important;
+      margin-top: 0.35em;
+    }
+
+    .legal-prose {
+      font-family: var(--font-family-doc) !important;
+      font-size: 10.5pt !important;
+      line-height: 1.45 !important;
+      color: #1a1a1a !important;
+    }
+
+    .legal-prose :global(h2) {
+      border-bottom: none !important;
+      padding-bottom: 0 !important;
+      font-size: 13pt !important;
+      font-weight: 700 !important;
+      margin: 1.1rem 0 0.35rem !important;
+      color: #1a1a1a !important;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    .legal-prose :global(h3) {
+      font-size: 11.5pt !important;
+      font-weight: 700 !important;
+      margin: 0.75rem 0 0.25rem !important;
+      color: #1a1a1a !important;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    .legal-prose :global(p),
+    .legal-prose :global(li) {
+      font-size: 10.5pt !important;
+      line-height: 1.45 !important;
+      color: #1a1a1a !important;
+    }
+
+    .legal-prose :global(p) {
+      margin: 0 0 0.5rem !important;
+    }
+
+    .legal-prose :global(ul),
+    .legal-prose :global(ol) {
+      margin: 0.25rem 0 0.6rem 1.5rem !important;
+      padding-left: 0 !important;
+      color: #1a1a1a !important;
+    }
+
+    .legal-prose :global(ol ol),
+    .legal-prose :global(ul ul),
+    .legal-prose :global(ol ul),
+    .legal-prose :global(ul ol) {
+      margin: 0.2rem 0 0.2rem 1.5rem !important;
+    }
+
+    .legal-prose :global(li) {
+      margin-bottom: 0.2rem !important;
+    }
+
+    .legal-prose :global(strong) {
+      color: #1a1a1a !important;
+    }
+  }
+</style>

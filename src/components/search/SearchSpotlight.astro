@@ -1,0 +1,866 @@
+---
+// SearchSpotlight.astro - Global Spotlight Search Dialog powered by Fuse.js
+---
+
+<div
+  id="spotlight-overlay"
+  class="spotlight-overlay"
+  aria-hidden="true"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Globale Suche"
+>
+  <div class="spotlight-backdrop" id="spotlight-backdrop"></div>
+
+  <div class="spotlight-dialog">
+    <!-- Top Search Input Bar -->
+    <div class="spotlight-header">
+      <svg
+        class="spotlight-search-icon"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="search"
+        id="spotlight-input"
+        class="spotlight-input"
+        placeholder="Alles durchsuchen…"
+        autocomplete="off"
+        spellcheck="false"
+      />
+    </div>
+
+    <!-- Category Filter Row -->
+    <div class="spotlight-filters">
+      <button type="button" class="spotlight-pill active" data-type="all">
+        Alle
+      </button>
+      <button type="button" class="spotlight-pill" data-type="event">
+        Termine
+      </button>
+      <button type="button" class="spotlight-pill" data-type="project">
+        Projekte
+      </button>
+      <button type="button" class="spotlight-pill" data-type="dataset">
+        Daten
+      </button>
+      <button type="button" class="spotlight-pill" data-type="blog">
+        Blog
+      </button>
+      <button type="button" class="spotlight-pill" data-type="protocol">
+        Protokolle
+      </button>
+      <button type="button" class="spotlight-pill" data-type="tag">
+        Tags
+      </button>
+      <button type="button" class="spotlight-pill" data-type="person">
+        Personen
+      </button>
+      <button type="button" class="spotlight-pill" data-type="organization">
+        Organisationen
+      </button>
+    </div>
+
+    <!-- Search Results List -->
+    <div class="spotlight-body" id="spotlight-results" role="listbox">
+      <!-- Injected via JavaScript -->
+      <div class="spotlight-loading">
+        <span>Suchindex wird geladen…</span>
+      </div>
+    </div>
+
+    <!-- Footer with Shortcuts & Link to Full Search Page -->
+    <div class="spotlight-footer">
+      <div class="spotlight-shortcuts">
+        <span>
+          <kbd>↑</kbd>
+          <kbd>↓</kbd> Navigieren
+        </span>
+        <span>
+          <kbd>↵</kbd> Öffnen
+        </span>
+        <span>
+          <kbd>ESC</kbd> Schließen
+        </span>
+      </div>
+      <a href="/suche" id="spotlight-full-link" class="link-action">
+        <span>Auf Suchseite öffnen</span>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="link-arrow"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14"></path>
+          <path d="m12 5 7 7-7 7"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  import type Fuse from 'fuse.js';
+  import {
+    type SearchDoc,
+    escapeHtml,
+    sanitizeUrl,
+    highlightHtml,
+    typeIcons,
+  } from '../../utils/search';
+
+  let searchIndex: SearchDoc[] = [];
+  let fuseInstance: Fuse<SearchDoc> | null = null;
+  let activeTypeFilter = 'all';
+  let activeIndex = 0;
+  let currentResults: SearchDoc[] = [];
+  let isIndexLoaded = false;
+  let isLoading = false;
+
+  let isInitialized = false;
+
+  function getOverlay() {
+    return document.getElementById('spotlight-overlay');
+  }
+  function getInput() {
+    return document.getElementById('spotlight-input') as HTMLInputElement | null;
+  }
+  function getResultsContainer() {
+    return document.getElementById('spotlight-results');
+  }
+  function getFullSearchLink() {
+    return document.getElementById('spotlight-full-link') as HTMLAnchorElement | null;
+  }
+
+  async function loadSearchIndex() {
+    if (isIndexLoaded || isLoading) return;
+    isLoading = true;
+    try {
+      const [res, { default: Fuse }] = await Promise.all([
+        fetch('/search-index.json'),
+        import('fuse.js'),
+      ]);
+      if (!res.ok) throw new Error('Search index load failed');
+      searchIndex = await res.json();
+      fuseInstance = new Fuse(searchIndex, {
+        keys: [
+          { name: 'title', weight: 0.4 },
+          { name: 'personNames', weight: 0.25 },
+          { name: 'organizationNames', weight: 0.2 },
+          { name: 'tags', weight: 0.2 },
+          { name: 'typeLabel', weight: 0.15 },
+          { name: 'category', weight: 0.1 },
+          { name: 'description', weight: 0.05 },
+        ],
+        threshold: 0.38,
+        ignoreLocation: true,
+        includeScore: true,
+      });
+      isIndexLoaded = true;
+    } catch (e) {
+      console.error('Error loading search index:', e);
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  function initSpotlight() {
+    if (isInitialized) return;
+    const input = getInput();
+    if (!input) return;
+    isInitialized = true;
+
+    input.addEventListener('input', () => {
+      performSearch();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+      }
+    });
+  }
+
+  function openSpotlight() {
+    const overlay = getOverlay();
+    if (!overlay) return;
+    initSpotlight();
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+
+    // Load index lazily on first open
+    if (!isIndexLoaded) {
+      loadSearchIndex().then(() => {
+        performSearch();
+      });
+    } else {
+      performSearch();
+    }
+
+    setTimeout(() => {
+      const inp = getInput();
+      inp?.focus();
+      inp?.select();
+    }, 50);
+  }
+
+  function closeSpotlight() {
+    const overlay = getOverlay();
+    if (!overlay) return;
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  (window as any).openSpotlight = openSpotlight;
+  (window as any).closeSpotlight = closeSpotlight;
+
+  function performSearch() {
+    const resultsContainer = getResultsContainer();
+    const input = getInput();
+    const fullSearchLink = getFullSearchLink();
+    if (!resultsContainer) return;
+    const query = input?.value.trim() || '';
+
+    if (fullSearchLink) {
+      const params = new URLSearchParams();
+      if (query) params.set('q', query);
+      if (!['all', 'person', 'tag', 'organization'].includes(activeTypeFilter)) {
+        params.set('type', activeTypeFilter);
+      }
+      fullSearchLink.href = `/suche${params.toString() ? `?${params.toString()}` : ''}`;
+    }
+
+    if (!isIndexLoaded) {
+      resultsContainer.innerHTML = `
+        <div class="spotlight-loading">
+          <span>Suchindex wird vorbereitet…</span>
+        </div>`;
+      return;
+    }
+
+    const matchesTypeFilter = (docType: string, filter: string) => {
+      if (filter === 'all') return true;
+      if (filter === 'project') return docType === 'project' || docType === 'idea';
+      if (filter === 'dataset') return docType === 'dataset' || docType === 'portal';
+      return docType === filter;
+    };
+
+    let items: SearchDoc[] = [];
+
+    if (!query) {
+      // Empty query: Show quick recommendations / recent entries
+      if (activeTypeFilter === 'all') {
+        const topContent = searchIndex
+          .filter((item) => !['person', 'tag', 'organization'].includes(item.type))
+          .slice(0, 6);
+        const topPersons = searchIndex.filter((item) => item.type === 'person').slice(0, 2);
+        items = [...topContent, ...topPersons];
+      } else {
+        items = searchIndex
+          .filter((item) => matchesTypeFilter(item.type, activeTypeFilter))
+          .slice(0, 8);
+      }
+    } else if (fuseInstance) {
+      const fuseResults = fuseInstance.search(query);
+      items = fuseResults
+        .map((r) => r.item)
+        .filter((item) => matchesTypeFilter(item.type, activeTypeFilter))
+        .slice(0, 10);
+    }
+
+    currentResults = items;
+    activeIndex = 0;
+    if (resultsContainer) resultsContainer.scrollTop = 0;
+    renderResults(query, items);
+  }
+
+  function renderResults(query: string, items: SearchDoc[]) {
+    const resultsContainer = getResultsContainer();
+    if (!resultsContainer) return;
+
+    if (items.length === 0) {
+      resultsContainer.innerHTML = `
+        <div class="spotlight-empty">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <p class="empty-title">Keine Treffer für "${escapeHtml(query)}"</p>
+          <p class="empty-subtitle">Versuche einen anderen Suchbegriff oder wechsle den Filter.</p>
+        </div>`;
+      return;
+    }
+
+    resultsContainer.innerHTML = items
+      .map((doc, idx) => {
+        const isSelected = idx === activeIndex;
+        const iconSvg = typeIcons[doc.type] || typeIcons.project;
+        const isExt = Boolean(doc.isExternal);
+        const safeUrl = sanitizeUrl(doc.url);
+        const safeImage = doc.image ? escapeHtml(doc.image) : '';
+        return `
+        <a
+          href="${safeUrl}"
+          ${isExt ? 'target="_blank" rel="noopener noreferrer"' : ''}
+          class="spotlight-item ${isSelected ? 'selected' : ''}"
+          data-index="${idx}"
+          role="option"
+          aria-selected="${isSelected}"
+        >
+          <div class="item-thumb-col" aria-hidden="true">
+            ${
+              safeImage
+                ? `<img src="${safeImage}" alt="" class="item-thumb-img" loading="lazy" data-type="${escapeHtml(doc.type)}" />`
+                : `<div class="item-thumb-fallback"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${iconSvg}</svg></div>`
+            }
+          </div>
+          <div class="item-info-col">
+            <div class="item-header-row">
+              <span class="item-title">${highlightHtml(doc.title, query)}</span>
+              <span class="item-badge badge-${escapeHtml(doc.type)}">${escapeHtml(doc.typeLabel)}</span>
+            </div>
+            ${doc.description ? `<p class="item-desc">${highlightHtml(doc.description, query)}</p>` : ''}
+            ${doc.category ? `<span class="item-meta">${escapeHtml(doc.category)}</span>` : ''}
+          </div>
+          <div class="item-arrow-col" aria-hidden="true">
+            <span class="item-arrow">${isExt ? '<span class="link-arrow">🡵</span>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="link-arrow" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>'}</span>
+          </div>
+        </a>
+      `;
+      })
+      .join('');
+
+    attachItemEvents();
+  }
+
+  function attachItemEvents() {
+    const resultsContainer = getResultsContainer();
+    if (!resultsContainer) return;
+
+    // Handle broken images gracefully with fallback SVG
+    resultsContainer.querySelectorAll<HTMLImageElement>('.item-thumb-img').forEach((img) => {
+      img.addEventListener(
+        'error',
+        () => {
+          const parent = img.parentElement;
+          if (parent) {
+            const type = img.dataset.type || 'project';
+            const icon = typeIcons[type] || typeIcons.project;
+            parent.innerHTML = `<div class="item-thumb-fallback"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${icon}</svg></div>`;
+          }
+        },
+        { once: true }
+      );
+    });
+
+    const itemEls = resultsContainer.querySelectorAll<HTMLElement>('.spotlight-item');
+    itemEls.forEach((el) => {
+      el.addEventListener('mouseenter', () => {
+        const idx = Number(el.dataset.index);
+        if (!isNaN(idx) && idx !== activeIndex) {
+          activeIndex = idx;
+          itemEls.forEach((other, oIdx) => {
+            other.classList.toggle('selected', oIdx === activeIndex);
+            other.setAttribute('aria-selected', oIdx === activeIndex ? 'true' : 'false');
+          });
+        }
+      });
+    });
+  }
+
+  function updateSelection() {
+    const resultsContainer = getResultsContainer();
+    const itemEls = resultsContainer?.querySelectorAll<HTMLElement>('.spotlight-item');
+    if (!itemEls || itemEls.length === 0 || !resultsContainer) return;
+
+    itemEls.forEach((el, idx) => {
+      const isSelected = idx === activeIndex;
+      el.classList.toggle('selected', isSelected);
+      el.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+    });
+
+    const selectedEl = itemEls[activeIndex];
+    if (selectedEl) {
+      const containerTop = resultsContainer.scrollTop;
+      const containerHeight = resultsContainer.clientHeight;
+      const elemTop = selectedEl.offsetTop;
+      const elemHeight = selectedEl.offsetHeight;
+
+      if (elemTop < containerTop) {
+        resultsContainer.scrollTop = elemTop;
+      } else if (elemTop + elemHeight > containerTop + containerHeight) {
+        resultsContainer.scrollTop = elemTop + elemHeight - containerHeight;
+      }
+    }
+  }
+
+  // Delegated click handler for triggers, backdrop, and filter pills
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement | null;
+    if (!target) return;
+
+    // Check if clicked element or parent has [data-open-search]
+    const openTrigger = target.closest('[data-open-search]');
+    if (openTrigger) {
+      e.preventDefault();
+      openSpotlight();
+      return;
+    }
+
+    // Check if clicked on backdrop
+    if (target.matches('#spotlight-backdrop') || target.closest('#spotlight-backdrop')) {
+      closeSpotlight();
+      return;
+    }
+
+    // Check if clicked on filter pill
+    const pill = target.closest('.spotlight-pill') as HTMLElement | null;
+    if (pill) {
+      const container = pill.closest('.spotlight-filters');
+      if (container) {
+        container.querySelectorAll('.spotlight-pill').forEach((p) => p.classList.remove('active'));
+        pill.classList.add('active');
+        activeTypeFilter = pill.dataset.type || 'all';
+        performSearch();
+      }
+    }
+  });
+
+  // Global keyboard navigation
+  window.addEventListener('keydown', (e) => {
+    const overlay = getOverlay();
+    const isOpen = overlay?.classList.contains('open');
+
+    // Cmd+K or Ctrl+K
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      if (isOpen) {
+        closeSpotlight();
+      } else {
+        openSpotlight();
+      }
+      return;
+    }
+
+    // Shortcut '/' outside inputs
+    if (
+      e.key === '/' &&
+      !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName || '')
+    ) {
+      e.preventDefault();
+      openSpotlight();
+      return;
+    }
+
+    if (!isOpen) return;
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeSpotlight();
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (currentResults.length > 0) {
+        activeIndex = (activeIndex + 1) % currentResults.length;
+        updateSelection();
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (currentResults.length > 0) {
+        activeIndex = (activeIndex - 1 + currentResults.length) % currentResults.length;
+        updateSelection();
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (currentResults[activeIndex]) {
+        const target = currentResults[activeIndex];
+        const safeUrl = sanitizeUrl(target.url);
+        if (safeUrl !== '#') {
+          if (target.isExternal) {
+            window.open(safeUrl, '_blank', 'noopener,noreferrer');
+          } else {
+            window.location.href = safeUrl;
+          }
+        }
+      } else {
+        // Go to full search page
+        const q = getInput()?.value.trim() || '';
+        window.location.href = `/suche?q=${encodeURIComponent(q)}`;
+      }
+    }
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSpotlight);
+  } else {
+    initSpotlight();
+  }
+  document.addEventListener('astro:page-load', initSpotlight);
+</script>
+
+<style is:global>
+  #spotlight-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 10vh 1rem 2rem;
+  }
+  #spotlight-overlay.open {
+    display: flex;
+  }
+
+  #spotlight-overlay .spotlight-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(28, 26, 24, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  #spotlight-overlay .spotlight-dialog {
+    position: relative;
+    z-index: 10000;
+    width: 100%;
+    max-width: 620px;
+    background: var(--color-surface-raised, #ffffff);
+    border: 1px solid var(--color-border, #efe8e1);
+    border-radius: 12px;
+    box-shadow: var(--shadow-xl);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Header */
+  #spotlight-overlay .spotlight-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--color-border, #efe8e1);
+  }
+  #spotlight-overlay .spotlight-search-icon {
+    color: var(--color-text-muted, #8c827a);
+    flex-shrink: 0;
+  }
+  #spotlight-overlay .spotlight-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    font-family: inherit;
+    color: var(--color-text, #1c1a18);
+    background: transparent;
+    padding: 0;
+  }
+  #spotlight-overlay .spotlight-input::placeholder {
+    color: var(--color-text-muted, #8c827a);
+  }
+
+  /* Filters */
+  #spotlight-overlay .spotlight-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.6rem 1rem;
+    background: var(--color-surface-sunken, #faf7f4);
+    border-bottom: 1px solid var(--color-border, #efe8e1);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  #spotlight-overlay .spotlight-pill {
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--color-border, #efe8e1);
+    color: var(--color-text-secondary, #555);
+    padding: 0.25rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+      background 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease;
+  }
+  #spotlight-overlay .spotlight-pill:hover {
+    border-color: var(--color-border-strong, #d8cec4);
+    color: var(--color-text, #1c1a18);
+  }
+  #spotlight-overlay .spotlight-pill.active {
+    background: var(--color-primary, #e8581c);
+    color: #ffffff;
+    border-color: var(--color-primary, #e8581c);
+    font-weight: 600;
+  }
+
+  /* Body / Results */
+  #spotlight-overlay .spotlight-body {
+    max-height: 380px;
+    overflow-y: auto;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  #spotlight-overlay .spotlight-loading,
+  #spotlight-overlay .spotlight-empty {
+    padding: 2.5rem 1rem;
+    text-align: center;
+    color: var(--color-text-muted, #777);
+    font-size: 0.9rem;
+  }
+  #spotlight-overlay .spotlight-empty svg {
+    margin-bottom: 0.5rem;
+    color: var(--color-text-muted, #aaa);
+  }
+  #spotlight-overlay .empty-title {
+    font-weight: 600;
+    color: var(--color-text, #1c1a18);
+    margin: 0 0 0.25rem;
+  }
+  #spotlight-overlay .empty-subtitle {
+    font-size: 0.8rem;
+    color: var(--color-text-muted, #777);
+    margin: 0;
+  }
+
+  #spotlight-overlay .spotlight-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding: 0.6rem 0.75rem !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+    color: var(--color-text, #1c1a18) !important;
+    background: transparent !important;
+    transition:
+      background 120ms ease,
+      border-color 120ms ease !important;
+    border: 1px solid transparent !important;
+    box-sizing: border-box !important;
+  }
+  #spotlight-overlay .spotlight-item:hover,
+  #spotlight-overlay .spotlight-item.selected {
+    background: var(--color-surface-hover, #faf7f4) !important;
+    border-color: var(--color-border, #efe8e1) !important;
+    text-decoration: none !important;
+  }
+
+  #spotlight-overlay .item-thumb-col {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    border-radius: 6px !important;
+    overflow: hidden !important;
+    flex-shrink: 0 !important;
+    background: var(--color-surface, #faf7f4) !important;
+    border: 1px solid var(--color-border, #efe8e1) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  #spotlight-overlay .item-thumb-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+  }
+  #spotlight-overlay .item-thumb-fallback {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--color-text-muted, #8c827a) !important;
+    background: var(--color-surface, #faf7f4) !important;
+  }
+  #spotlight-overlay .spotlight-item.selected .item-thumb-fallback {
+    color: var(--color-primary, #e8581c) !important;
+    background: var(--color-primary-light, #fff3ed) !important;
+  }
+
+  #spotlight-overlay .item-info-col {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.15rem !important;
+  }
+  #spotlight-overlay .item-header-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 0.5rem !important;
+  }
+  #spotlight-overlay .item-title {
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    color: var(--color-text, #1c1a18) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  #spotlight-overlay .spotlight-item.selected .item-title {
+    color: var(--color-primary, #e8581c) !important;
+  }
+  #spotlight-overlay .ext-arrow {
+    font-size: 0.8rem !important;
+    color: var(--color-text-muted, #888) !important;
+  }
+  #spotlight-overlay .item-badge {
+    font-size: 0.68rem !important;
+    font-weight: 600 !important;
+    padding: 0.15rem 0.45rem !important;
+    border-radius: 4px !important;
+    background: var(--color-surface-sunken, #efe8e1) !important;
+    color: var(--color-text, #1c1a18) !important;
+    border: 1px solid var(--color-border, transparent) !important;
+    flex-shrink: 0 !important;
+  }
+  #spotlight-overlay .badge-project {
+    background: rgba(245, 158, 11, 0.2) !important;
+    color: #f59e0b !important;
+  }
+  #spotlight-overlay .badge-event {
+    background: rgba(59, 130, 246, 0.2) !important;
+    color: #60a5fa !important;
+  }
+  #spotlight-overlay .badge-dataset {
+    background: rgba(34, 197, 94, 0.2) !important;
+    color: #4ade80 !important;
+  }
+  #spotlight-overlay .badge-protocol {
+    background: rgba(168, 85, 247, 0.2) !important;
+    color: #c084fc !important;
+  }
+  #spotlight-overlay .badge-blog {
+    background: rgba(236, 72, 153, 0.18) !important;
+    color: #db2777 !important;
+  }
+  #spotlight-overlay .badge-idea {
+    background: rgba(239, 68, 68, 0.2) !important;
+    color: #f87171 !important;
+  }
+  #spotlight-overlay .badge-portal {
+    background: rgba(99, 102, 241, 0.2) !important;
+    color: #818cf8 !important;
+  }
+  #spotlight-overlay .badge-person {
+    background: rgba(232, 88, 28, 0.18) !important;
+    color: var(--color-primary, #e8581c) !important;
+  }
+  #spotlight-overlay .badge-tag {
+    background: rgba(20, 184, 166, 0.18) !important;
+    color: #0d9488 !important;
+  }
+  #spotlight-overlay .badge-organization {
+    background: rgba(14, 165, 233, 0.18) !important;
+    color: #0284c7 !important;
+  }
+  #spotlight-overlay .item-thumb-img[data-type='person'],
+  #spotlight-overlay .spotlight-item:has(.badge-person) .item-thumb-col,
+  #spotlight-overlay .spotlight-item:has(.badge-person) .item-thumb-fallback {
+    border-radius: 50% !important;
+  }
+
+  #spotlight-overlay .item-desc {
+    font-size: 0.8rem !important;
+    color: var(--color-text-secondary, #666666) !important;
+    margin: 0 !important;
+    line-height: 1.4 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  #spotlight-overlay .item-meta {
+    display: inline-block !important;
+    font-size: 0.72rem !important;
+    color: var(--color-text-muted, #8c827a) !important;
+    margin: 0 !important;
+  }
+  #spotlight-overlay .item-arrow-col {
+    color: var(--color-text-muted, #8c827a) !important;
+    flex-shrink: 0 !important;
+    font-size: 0.85rem !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  #spotlight-overlay .spotlight-item.selected .item-arrow-col {
+    color: var(--color-primary, #e8581c) !important;
+  }
+
+  /* Query Term Highlighting */
+  #spotlight-overlay .highlight-match {
+    font-weight: 700 !important;
+    color: var(--color-primary, #e8581c) !important;
+    background: rgba(232, 88, 28, 0.2) !important;
+    border-radius: 2px !important;
+    padding: 0 2px !important;
+  }
+
+  /* Footer */
+  #spotlight-overlay .spotlight-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
+    background: var(--color-surface-sunken, #faf7f4);
+    border-top: 1px solid var(--color-border, #efe8e1);
+    font-size: 0.75rem;
+    color: var(--color-text-muted, #777);
+  }
+  #spotlight-overlay .spotlight-shortcuts {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  #spotlight-overlay .spotlight-shortcuts kbd {
+    font-family: inherit;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    background: var(--color-surface, #ffffff);
+    border: 1px solid var(--color-border, #efe8e1);
+    color: var(--color-text-secondary, #444);
+  }
+
+  @media (max-width: 600px) {
+    #spotlight-overlay {
+      padding: 0;
+      align-items: stretch;
+    }
+    #spotlight-overlay .spotlight-dialog {
+      max-width: 100%;
+      height: 100vh;
+      border-radius: 0;
+      border: none;
+    }
+    #spotlight-overlay .spotlight-body {
+      max-height: calc(100vh - 160px);
+    }
+    #spotlight-overlay .spotlight-shortcuts {
+      display: none;
+    }
+  }
+</style>

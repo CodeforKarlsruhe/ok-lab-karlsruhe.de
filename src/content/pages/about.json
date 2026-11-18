@@ -1,0 +1,62 @@
+{
+  "hero": {
+    "titleLine1": "Civic Tech in",
+    "titleHighlight": "Karlsruhe",
+    "lead": "Wir sind das OK Lab Karlsruhe. Als Teil des bundesweiten Netzwerks Code for Germany und der Open Knowledge Foundation Deutschland nutzen wir Technologie und offene Daten, um kommunale Daten nutzbar und verständlich zu machen.",
+    "ctaText": "Nächstes Treffen besuchen",
+    "ctaUrl": "#treffen",
+    "image": "/assets/images/about/hero/image.webp",
+    "imageAlt": "OK Lab Karlsruhe Arbeitsraum (© OK Lab Karlsruhe)"
+  },
+  "vision": {
+    "title": "Wofür wir stehen",
+    "text": "Öffentliche Daten gehören der Öffentlichkeit. Wir setzen uns dafür ein, dass Karlsruher Verwaltungs-, Umwelt- und Geodaten frei zugänglich sind und von allen genutzt werden können. Unsere Softwareprojekte sind ausnahmslos quelloffen und gemeinwohlorientiert.",
+    "goals": [
+      "Konkrete Open-Source-Projekte für die Karlsruher Zivilgesellschaft umsetzen",
+      "Stadtverwaltung und Kommunen bei der Bereitstellung maschinenlesbarer Daten unterstützen",
+      "Offene Räume für fachlichen Austausch und Projektarbeit bieten"
+    ]
+  },
+  "whoWeAre": {
+    "title": "Wer wir sind",
+    "text": "Das OK Lab Karlsruhe ist eine ehrenamtliche Gemeinschaft engagierter Bürgerinnen und Bürger aus Softwareentwicklung, Kartografie, Datenanalyse und Stadtgestaltung. Wir sind Teil des bundesweiten Netzwerks Code for Germany unter dem Dach der Open Knowledge Foundation Deutschland e.V. und international mit Code for All vernetzt."
+  },
+  "principles": [
+    {
+      "title": "Open Data",
+      "description": "Frei zugängliche und maschinenlesbare Daten der öffentlichen Hand, die von allen zu jedem Zweck genutzt und geteilt werden dürfen.",
+      "icon": "folder"
+    },
+    {
+      "title": "Offene Verwaltung",
+      "description": "Transparenz und Verständlichkeit kommunaler Entscheidungsprozesse durch offene Beschluss- und Haushaltsdaten.",
+      "icon": "landmark"
+    },
+    {
+      "title": "Civic Tech",
+      "description": "Quelloffene Software, Dashboards und Analysen, die konkrete Fragen des städtischen Alltags lösen.",
+      "icon": "code"
+    }
+  ],
+  "participation": {
+    "title": "Mitmachen & Vernetzen",
+    "lead": "Du möchtest bei uns mitwirken oder mit uns zusammenarbeiten? Es gibt zwei direkte Wege:",
+    "ways": [
+      {
+        "title": "Als Mitwirkende(r) im Lab",
+        "desc": "Komm zum Lab-Treffen im Impact Hub oder zum offenen Coding-Workshop bei Entropia. Wir freuen uns über Programmierer, Designer, Rechercheure und neugierige Bürger."
+      },
+      {
+        "title": "Für Verwaltung, Initiativen & Medien",
+        "desc": "Wir unterstützen städtische Ämter bei der Veröffentlichung offener Daten und kooperieren gerne bei Civic-Tech-Projekten, Hackathons und dem Fachaustausch rund um Open Data und offene Standards."
+      }
+    ]
+  },
+  "coc": {
+    "title": "Code of Conduct",
+    "text": "Das OK Lab Karlsruhe ist ein sicherer und diskriminierungsfreier Ort für alle. Unser Verhaltenskodex gilt für alle Treffen vor Ort und in digitalen Räumen.",
+    "linkUrl": "https://codefor.de/codeofconduct/",
+    "linkText": "Vollständigen Verhaltenskodex lesen"
+  },
+  "contactMail": "info@ok-lab-karlsruhe.de"
+}

@@ -1,0 +1,92 @@
+---
+export interface PersonGridItem {
+  id: string;
+  name: string;
+  role?: string;
+  img: string;
+  href?: string;
+}
+
+interface Props {
+  persons: PersonGridItem[];
+}
+
+const { persons } = Astro.props;
+---
+
+<div class="team-grid">
+  {persons.map((m) => (
+    <a href={m.href || `/suche?person=${m.id}`} title={`Alle Beiträge von ${m.name} anzeigen`}>
+      <img src={m.img} alt={m.name} loading="lazy" />
+      <p class="member-name">{m.name}</p>
+      {m.role && <p class="member-role">{m.role}</p>}
+    </a>
+  ))}
+</div>
+
+<style>
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem 1.5rem;
+  }
+
+  a {
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 150ms ease;
+  }
+
+  a:hover {
+    transform: translateY(-2px);
+  }
+
+  a:hover img {
+    border-color: var(--color-primary);
+  }
+
+  a:hover .member-name {
+    color: var(--color-primary);
+  }
+
+  img {
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto 0.75rem;
+    display: block;
+    border: 2px solid var(--color-border);
+    background: var(--color-surface-sunken);
+  }
+
+  .member-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 0.25rem 0;
+  }
+
+  .member-role {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    line-height: 1.45;
+    margin: 0 auto;
+    max-width: 200px;
+  }
+
+  @media (max-width: 900px) {
+    .team-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .team-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+  }
+</style>

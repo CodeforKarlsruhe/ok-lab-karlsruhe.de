@@ -1,0 +1,16 @@
+{
+  "title": "Open Data Initiative des KVV",
+  "region": "karlsruhe",
+  "url": "https://www.kvv.de/fahrplan/fahrplaene/open-data.html",
+  "description": "Mobilitätsdaten für den Karlsruher Verkehrsverbund.",
+  "subItems": [
+    {
+      "title": "Soll-Fahrplandaten-Archiv (Download GTFS-Archiv, CC0)",
+      "url": "https://projekte.kvv-efa.de/GTFS/google_transit.zip"
+    },
+    {
+      "title": "TRIAS-Schnittstelle: Echtzeit Fahrplanauskunft (Zugang auf Anfrage)",
+      "url": "https://www.kvv.de/fahrplan/fahrplaene/open-data.html"
+    }
+  ]
+}

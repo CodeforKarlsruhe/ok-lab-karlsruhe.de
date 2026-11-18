@@ -1,0 +1,19 @@
+{
+  "title": "KlikKS & KEA-BW",
+  "region": "badenWuerttemberg",
+  "description": "Ehrenamtliche und kommunale Netzwerke zur Förderung des Klimaschutzes.",
+  "subItems": [
+    {
+      "title": "KlikKS Ehrenamtliche Klimaschutzpat:innen",
+      "url": "https://klikks-bw.de/"
+    },
+    {
+      "title": "KEA-BW Förderdatenbank",
+      "url": "https://www.kea-bw.de/foerderdatenbank"
+    },
+    {
+      "title": "Klimaschutzland BW",
+      "url": "https://klimaschutzland.baden-wuerttemberg.de/"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Trajektoriendaten auf eine Forschungskreuzung – TAF-BW Datensatz",
+  "teaser": "Trajektorien- und Objektlistendaten einer vernetzten Forschungskreuzung für Mobilitätsanalysen.",
+  "description": "Im Rahmen des Testfeldes Autonomes Fahren - BW (TAF) erfolgt die Erhebung von Daten an, mit Kameras ausgestatteten Straßenkreuzungen, um den Verkehrsfluss und das Verhalten der Verkehrsteilnehmer zu analysieren. Der Datensatz wurde nach dem Tracking-Prozess entnommen und es wurden noch keine besonderen Optimierungs- und Post-Processing-Schritte durchgeführt. Die Daten eröffnen die Möglichkeit der Glättung und einer darauf aufbauenden Analyse der Verhaltensprofile einzelner Verkehrsteilnehmer. Der Datensatz besteht aus Zeitstempeln, Geschwindigkeitsvektoren, Art, Größe und Position des Verkehrsteilnehmers. Es gibt bereits eine Visualisierung. Passwort: odd2025",
+  "publisherIds": ["fzi"],
+  "url": "https://my.hidrive.com/share/7tham.o1ma#$/fzi/taf_data",
+  "tags": ["Autonomes Fahren", "Mobilitätsforschung"],
+  "formats": ["csv", "geojson", "osm", "sonstige"],
+  "size": "<100 MB Objektlistendaten",
+  "personIds": [],
+  "useCases": "Datenanalyse für autonomes Fahren, Verkehrsoptimierung, Kreuzungssteuerung",
+  "image": "/assets/images/datasets/taf-bw-intersection/image.webp"
+}

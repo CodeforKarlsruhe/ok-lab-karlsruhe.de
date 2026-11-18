@@ -1,0 +1,15 @@
+# Licensing — OK Lab Karlsruhe Website
+
+Unless explicitly stated otherwise in individual files or frontmatter/captions, the materials in this repository are licensed as follows:
+
+1. **Source Code (`src/`, `scripts/`, configuration, and build/CI workflows):**
+   Licensed under the **Apache License, Version 2.0**.
+   See [LICENSE-APACHE](LICENSE-APACHE) or <https://www.apache.org/licenses/LICENSE-2.0>.
+
+2. **Editorial Content (`src/content/` and documentation):**
+   Licensed under **Creative Commons Attribution 4.0 International (CC BY 4.0)**.
+   See <https://creativecommons.org/licenses/by/4.0/>.
+
+3. **Media Assets (`public/assets/images/`, `public/assets/videos/`, and third-party vendor files):**
+   Subject to copyright (all rights reserved by the respective authors/photographers/organizations) unless a specific license (such as CC BY 4.0 or CC BY 2.0) is explicitly indicated on the file, caption, or `imageAlt` metadata.
+   Third-party assets under `public/assets/vendor/` and `public/fonts/` remain subject to their respective upstream licenses.

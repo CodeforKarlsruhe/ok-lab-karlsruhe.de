@@ -1,0 +1,162 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+import TagPill from '../ui/TagPill.astro';
+import SideCard from '../cards/SideCard.astro';
+import PrintModeMenu from '../print/PrintModeMenu.astro';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  statusLabel: string;
+  resolvedOrganizations: CollectionEntry<'organizations'>[];
+  resolvedPersons: CollectionEntry<'persons'>[];
+  relatedProtocols: CollectionEntry<'protocols'>[];
+}
+
+const { project, statusLabel, resolvedOrganizations, resolvedPersons, relatedProtocols } =
+  Astro.props;
+const isIdea = project.data.scope === 'idea';
+---
+
+<div class="sidebar-col">
+  {isIdea && (
+    <SideCard title="Lust mitzumachen?">
+      <div class="join-actions">
+        <Button
+          href={`mailto:info@ok-lab-karlsruhe.de?subject=Mitmachen%20bei%20Idee:%20${encodeURIComponent(project.data.title)}`}
+          variant="primary"
+        >
+          <Icon name="mail" size={15} strokeWidth={1.75} />
+          <span>Kontakt aufnehmen</span>
+        </Button>
+        <Button href="/about#mitmachen" variant="outline">
+          <span>Im Lab einbringen</span>
+        </Button>
+      </div>
+    </SideCard>
+  )}
+
+  <SideCard title="Projektstatus & Infos">
+    {!isIdea && (
+      <div class="fact-row">
+        <div class="fact-label">Status</div>
+        <div class="fact-value">
+          <span class="status-pill-val">{statusLabel}</span>
+        </div>
+      </div>
+    )}
+
+    <div class="fact-row">
+      <div class="fact-label">Kategorie</div>
+      <div class="fact-value">{project.data.category}</div>
+    </div>
+
+    {project.data.tags && project.data.tags.length > 0 && (
+      <div class="fact-row no-border">
+        <div class="fact-label">Tags</div>
+        <div class="tags-container">
+          {project.data.tags.map((t: string) => (
+            <TagPill variant="tag" href={`/suche?tag=${encodeURIComponent(t)}`}>
+              {t}
+            </TagPill>
+          ))}
+        </div>
+      </div>
+    )}
+  </SideCard>
+
+  {resolvedOrganizations.length > 0 && (
+    <SideCard title="Partner & Organisationen">
+      <ul>
+        {resolvedOrganizations.map((org) => (
+          <li>
+            {org.data.url ? (
+              <a href={org.data.url} target="_blank" rel="noopener noreferrer" class="link-subtle">
+                <span>{org.data.name}</span> <span class="link-arrow">🡵</span>
+              </a>
+            ) : (
+              <span>{org.data.name}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </SideCard>
+  )}
+
+  {resolvedPersons.length > 0 && (
+    <SideCard title="Mitwirkende">
+      <ul>
+        {resolvedPersons.map((c) => (
+          <li>
+            <a
+              href={`/suche?person=${c.id}`}
+              class="link-subtle"
+              title={`Alle Aktivitäten von ${c.data.name} anzeigen`}
+            >
+              {c.data.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </SideCard>
+  )}
+
+  {project.data.externalLinks.length > 0 && (
+    <SideCard title="Links & Ressourcen">
+      <ul>
+        {project.data.externalLinks.map((l: any) => (
+          <li>
+            <a href={l.url} target="_blank" rel="noopener noreferrer" class="link-action">
+              <span>{l.name || l.title || l.url}</span>
+              <span class="link-arrow">🡵</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </SideCard>
+  )}
+
+  {project.data.press && project.data.press.length > 0 && (
+    <SideCard title="Presse & Referenzen">
+      <ul>
+        {project.data.press.map((pr: any) => (
+          <li>
+            {pr.url ? (
+              <a href={pr.url} target="_blank" rel="noopener noreferrer" class="link-subtle">
+                <span>{pr.title}</span> <span class="link-arrow">🡵</span>
+              </a>
+            ) : (
+              <span>{pr.title}</span>
+            )}
+            {(pr.outlet || pr.date) && (
+              <span class="side-card-sub">{[pr.outlet, pr.date].filter(Boolean).join(' · ')}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </SideCard>
+  )}
+
+  {relatedProtocols.length > 0 && (
+    <SideCard title="Erwähnt in Protokollen">
+      <ul>
+        {relatedProtocols.map((proto) => {
+          const dateStr = new Date(proto.data.date).toLocaleDateString('de-DE');
+          return (
+            <li>
+              <a href={`/protokolle/${proto.id}`} class="link-subtle">
+                {proto.data.title}
+              </a>
+              <span class="side-card-sub">
+                {dateStr} ({proto.data.type})
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </SideCard>
+  )}
+
+  <PrintModeMenu />
+</div>

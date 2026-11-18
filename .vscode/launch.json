@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "_Launch Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://127.0.0.1:4321/",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "pnpm: dev"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Fullstack Dev",
+      "configurations": ["_Launch Chrome"]
+    }
+  ]
+}

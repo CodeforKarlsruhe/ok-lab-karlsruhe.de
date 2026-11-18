@@ -1,0 +1,49 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/layout/PageHeader.astro';
+import Button from '../../components/ui/Button.astro';
+import Icon from '../../components/ui/Icon.astro';
+import BlogTimeline from '../../components/blog/BlogTimeline.astro';
+import { FEDIVERSE_DEFAULT_URL, FEDIVERSE_PROFILE_URL, loadBlogContext } from '../../utils/blog';
+import { parseDateSafe } from '../../utils/events';
+
+const [rawPosts, ctx] = await Promise.all([getCollection('blog'), loadBlogContext()]);
+
+const sortedPosts = [...rawPosts].sort(
+  (a, b) => parseDateSafe(b.data.date).getTime() - parseDateSafe(a.data.date).getTime()
+);
+---
+
+<Layout title="Blog" activeNav="blog">
+  <main class="blog-page">
+    <PageHeader
+      title="Blog & Impulse"
+      description="Kurze Eindrücke von Veranstaltungen, spannende Links und Neuigkeiten aus dem OK Lab Karlsruhe."
+    >
+      <div
+        class="header-actions"
+        style="margin-top: 1.5rem; display: flex; gap: 0.75rem; flex-wrap: wrap;"
+      >
+        <Button variant="outline" size="sm" href={FEDIVERSE_DEFAULT_URL} external>
+          <Icon slot="icon-left" name="lemmy" size={14} strokeWidth={2} />
+          <span>Lemmy-Community</span>
+          <span class="link-arrow">🡵</span>
+        </Button>
+        <Button variant="outline" size="sm" href={FEDIVERSE_PROFILE_URL} external>
+          <Icon slot="icon-left" name="mastodon" size={14} strokeWidth={2} />
+          <span>Mastodon-Account</span>
+          <span class="link-arrow">🡵</span>
+        </Button>
+        <Button variant="outline" size="sm" href="/blog/rss.xml">
+          <Icon slot="icon-left" name="rss" size={14} strokeWidth={2} />
+          <span>RSS Feed</span>
+        </Button>
+      </div>
+    </PageHeader>
+
+    <div class="main-container narrow">
+      <BlogTimeline posts={sortedPosts} ctx={ctx} />
+    </div>
+  </main>
+</Layout>

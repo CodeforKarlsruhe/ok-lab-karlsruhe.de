@@ -1,0 +1,226 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/layout/Breadcrumb.astro';
+import DetailHeader from '../../components/layout/DetailHeader.astro';
+import Button from '../../components/ui/Button.astro';
+import ArrowRight from '../../components/ui/ArrowRight.astro';
+import DatasetCard from '../../components/cards/DatasetCard.astro';
+import ProjectCard from '../../components/cards/ProjectCard.astro';
+import DatasetDetailSidebar from '../../components/datasets/DatasetDetailSidebar.astro';
+import BlogTimeline from '../../components/blog/BlogTimeline.astro';
+import EntityPrintSheets from '../../components/print/EntityPrintSheets.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const datasets = await getCollection('datasets');
+  return datasets.map((d) => ({
+    params: { slug: d.id },
+    props: { dataset: d },
+  }));
+}
+
+interface Props {
+  dataset: CollectionEntry<'datasets'>;
+}
+
+const { dataset } = Astro.props;
+
+const [allProjects, allPortals, allOrganizations, allPersons, allDatasets] = await Promise.all([
+  getCollection('projects'),
+  getCollection('portale'),
+  getCollection('organizations'),
+  getCollection('persons'),
+  getCollection('datasets'),
+]);
+
+const usingProjects = allProjects.filter(
+  (p) => p.data.scope !== 'idea' && p.data.datasetIds && p.data.datasetIds.includes(dataset.id)
+);
+const usingIdeas = allProjects.filter(
+  (p) => p.data.scope === 'idea' && p.data.datasetIds && p.data.datasetIds.includes(dataset.id)
+);
+
+const resolvedPersons = (dataset.data.personIds || [])
+  .map((pId: string) =>
+    allPersons.find((p) => p.id === pId || p.data.name.toLowerCase() === pId.toLowerCase())
+  )
+  .filter((p): p is CollectionEntry<'persons'> => Boolean(p));
+
+const resolvedPublishers = (dataset.data.publisherIds || [])
+  .map((id) => allOrganizations.find((o) => o.id === id))
+  .filter((o): o is CollectionEntry<'organizations'> => Boolean(o));
+
+const publisherString =
+  resolvedPublishers.length > 0 ? resolvedPublishers.map((o) => o.data.name).join(', ') : '';
+
+const linkedPortal = dataset.data.portalId
+  ? allPortals.find((p) => p.id === dataset.data.portalId)
+  : null;
+
+const otherDatasets = allDatasets.filter((d) => d.id !== dataset.id);
+const tagMatches = otherDatasets.filter((d) =>
+  d.data.tags?.some((t) => dataset.data.tags?.includes(t))
+);
+
+const relatedPool: CollectionEntry<'datasets'>[] = [...tagMatches];
+for (const d of otherDatasets) {
+  if (relatedPool.length >= 3) break;
+  if (!relatedPool.some((item) => item.id === d.id)) {
+    relatedPool.push(d);
+  }
+}
+const displayRelated = relatedPool.slice(0, 3);
+
+const rawImg = dataset.data.image;
+const dImg = rawImg ? (rawImg.startsWith('/') ? rawImg : `/${rawImg}`) : null;
+---
+
+<Layout title={dataset.data.title} activeNav="daten">
+  <div class="dataset-detail-container">
+    <Breadcrumb href="/daten" label="Zurück zu allen Datensätzen" />
+
+    <DetailHeader
+      title={dataset.data.title}
+      subtitle={dataset.data.teaser}
+      image={dImg}
+      imageAlt={dataset.data.imageAlt || dataset.data.title}
+    >
+      {dataset.data.url && (
+        <Button href={dataset.data.url} variant="primary" external>
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+          </svg>
+          <span>Datensatz öffnen</span>
+          <span class="link-arrow">🡵</span>
+        </Button>
+      )}
+    </DetailHeader>
+
+    <div class="layout-grid">
+      <div class="content-col">
+        <div class="description-box">
+          <h3 class="box-heading">Beschreibung</h3>
+          <p>{dataset.data.description}</p>
+        </div>
+
+        {dataset.data.useCases && (
+          <div class="usecases-box">
+            <h3 class="box-heading">Mögliche Anwendungsfälle & Ideen</h3>
+            <p>{dataset.data.useCases}</p>
+          </div>
+        )}
+
+        <div class="access-box">
+          <h3>Direkter Datenzugang</h3>
+          <p>
+            Dieser Datensatz wird von <strong>{publisherString}</strong> unter offenen Bedingungen
+            bereitgestellt. Bitte beachte die jeweiligen Lizenzhinweise beim Verwenden in eigenen
+            Anwendungen.
+          </p>
+          <Button href={dataset.data.url} external={true} variant="primary">
+            <span>Download / API-Schnittstelle öffnen</span>
+            <span class="link-arrow">🡵</span>
+          </Button>
+        </div>
+
+        <BlogTimeline entityType="dataset" entityId={dataset.id} heading="Erwähnt im Blog" />
+
+        {usingProjects.length > 0 && (
+          <div class="linked-projects-block">
+            <h2 class="section-title">Genutzt in Projekten</h2>
+            <div class="linked-datasets-grid">
+              {usingProjects.map((p) => (
+                <ProjectCard project={p} slim={true} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <DatasetDetailSidebar
+        dataset={dataset}
+        publisherString={publisherString}
+        resolvedPublishers={resolvedPublishers}
+        linkedPortal={linkedPortal}
+        resolvedPersons={resolvedPersons}
+        usingIdeas={usingIdeas}
+      />
+    </div>
+
+    {displayRelated.length > 0 && (
+      <div class="related-section">
+        <div class="related-header">
+          <h2>Ähnliche Datensätze</h2>
+          <a href="/daten" class="link-action">
+            <span>Alle Datensätze</span>
+            <ArrowRight />
+          </a>
+        </div>
+
+        <div class="related-grid">
+          {displayRelated.map((rd) => (
+            <DatasetCard dataset={rd} organizations={allOrganizations} slim={true} />
+          ))}
+        </div>
+      </div>
+    )}
+
+    <EntityPrintSheets
+      typeLabel="Daten-Steckbrief"
+      title={dataset.data.title}
+      teaser={dataset.data.teaser || ''}
+      description={dataset.data.description}
+      image={dImg}
+      topMeta={[
+        { label: 'Herausgeber', value: publisherString },
+        { label: 'Themen', value: (dataset.data.tags || []).join(', ') },
+        {
+          label: 'Format',
+          value: (dataset.data.formats || []).map((f) => f.toUpperCase()).join(', '),
+        },
+        { label: 'Größe', value: dataset.data.size || '' },
+      ]}
+      bottomMeta={[
+        {
+          label: 'Ansprechpartner',
+          value: resolvedPersons.map((p) => p.data.name).join(', ') || dataset.data.contact || '',
+        },
+        { label: 'Verwendungszwecke', value: dataset.data.useCases || '' },
+        { label: 'Download', value: dataset.data.url || '', mono: true },
+      ]}
+      canonicalUrl={`https://ok-lab-karlsruhe.de/daten/${dataset.id}`}
+      displayUrl={`ok-lab-karlsruhe.de/daten/${dataset.id}`}
+      badges={[
+        ...resolvedPublishers.map((o) => o.data.name),
+        ...(dataset.data.formats || []).map((f) => f.toUpperCase()),
+      ]}
+      accentColor="#edf4d8"
+    />
+  </div>
+</Layout>
+
+<style>
+  @media print {
+    .dataset-detail-container {
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .dataset-detail-container > :global(*:not(.entity-print-sheets)) {
+      display: none !important;
+    }
+  }
+</style>

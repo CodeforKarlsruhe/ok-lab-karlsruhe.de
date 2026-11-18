@@ -1,0 +1,95 @@
+---
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import SearchSpotlight from '../components/search/SearchSpotlight.astro';
+import '../styles/main.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  activeNav?: string;
+}
+
+const pathname = Astro.url.pathname;
+let computedNav = '';
+if (pathname === '/' || pathname === '') {
+  computedNav = 'home';
+} else if (pathname.startsWith('/events')) {
+  computedNav = 'events';
+} else if (pathname.startsWith('/projekte')) {
+  computedNav = 'projekte';
+} else if (pathname.startsWith('/daten')) {
+  computedNav = 'daten';
+} else if (pathname.startsWith('/blog')) {
+  computedNav = 'blog';
+} else if (pathname.startsWith('/about')) {
+  computedNav = 'about';
+} else if (pathname.startsWith('/protokolle')) {
+  computedNav = 'protokolle';
+} else if (pathname.startsWith('/tooling')) {
+  computedNav = 'tooling';
+}
+
+const {
+  title,
+  description = 'OK Lab Karlsruhe — Civic Tech, Open Data & Wissensgraph Plattform',
+  activeNav = computedNav,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} — OK Lab Karlsruhe</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/assets/images/okl.svg" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="OK Lab Karlsruhe — Blog & Impulse"
+      href="/blog/rss.xml"
+    />
+
+    <!-- Pre-render theme state to prevent flash of wrong theme (FOUC) and global fallback handler -->
+    <script is:inline>
+      (function () {
+        try {
+          const savedTheme = localStorage.getItem('theme');
+          if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+          } else if (
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches
+          ) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          }
+        } catch (e) {}
+
+        // Global CSP-compliant image fallback handler
+        window.addEventListener(
+          'error',
+          function (e) {
+            const target = e.target;
+            if (target && target.tagName === 'IMG' && target.dataset && target.dataset.fallback) {
+              const fb = target.dataset.fallback;
+              target.removeAttribute('data-fallback');
+              target.src = fb;
+            }
+          },
+          true
+        );
+      })();
+    </script>
+  </head>
+  <body>
+    <Header activeNav={activeNav} />
+
+    <slot />
+
+    <Footer />
+
+    <SearchSpotlight />
+  </body>
+</html>

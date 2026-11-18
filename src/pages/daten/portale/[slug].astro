@@ -1,0 +1,142 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Breadcrumb from '../../../components/layout/Breadcrumb.astro';
+import DetailHeader from '../../../components/layout/DetailHeader.astro';
+import Button from '../../../components/ui/Button.astro';
+import DatasetCard from '../../../components/cards/DatasetCard.astro';
+import SideCard from '../../../components/cards/SideCard.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const portale = await getCollection('portale');
+  return portale.map((p) => ({
+    params: { slug: p.id },
+    props: { portal: p },
+  }));
+}
+
+interface Props {
+  portal: CollectionEntry<'portale'>;
+}
+
+const { portal } = Astro.props;
+
+const REGION_LABELS: Record<string, string> = {
+  karlsruhe: 'Karlsruhe',
+  badenWuerttemberg: 'Baden-Württemberg',
+  deutschland: 'Deutschland',
+};
+
+const [allDatasets, allOrganizations] = await Promise.all([
+  getCollection('datasets'),
+  getCollection('organizations'),
+]);
+
+const linkedDatasets = allDatasets.filter((d) => d.data.portalId === portal.id);
+const regionLabel = REGION_LABELS[portal.data.region] ?? portal.data.region;
+const subItems = portal.data.subItems || [];
+---
+
+<Layout title={`${portal.data.title} – Datenportale`} activeNav="daten">
+  <div class="dataset-detail-container">
+    <Breadcrumb href="/daten#portale" label="Zurück zu allen Datenportalen" />
+
+    <DetailHeader title={portal.data.title}>
+      {portal.data.url && (
+        <Button href={portal.data.url} variant="primary" external>
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span>Portal öffnen</span>
+          <span class="link-arrow">🡵</span>
+        </Button>
+      )}
+    </DetailHeader>
+
+    <div class="layout-grid">
+      <div class="content-col">
+        {portal.data.description && (
+          <div class="description-box">
+            <h3 class="box-heading">Beschreibung</h3>
+            <p>{portal.data.description}</p>
+          </div>
+        )}
+
+        {subItems.length > 0 && (
+          <div class="usecases-box">
+            <h3 class="box-heading">Enthaltene Datensätze & Tools</h3>
+            <ul class="portal-subitems">
+              {subItems.map((item) => (
+                <li>
+                  <a href={item.url} target="_blank" rel="noopener noreferrer" class="link-inline">
+                    <span>{item.title}</span>
+                    <span class="link-arrow">🡵</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {linkedDatasets.length > 0 && (
+          <div class="linked-datasets-block">
+            <h2 class="section-title">Verknüpfte Datensätze</h2>
+            <div class="linked-datasets-grid">
+              {linkedDatasets.map((ds) => (
+                <DatasetCard dataset={ds} organizations={allOrganizations} slim={true} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div class="sidebar-col">
+        <SideCard title="Fakten">
+          <div class={`fact-row ${portal.data.url ? '' : 'no-border'}`}>
+            <div class="fact-label">Region</div>
+            <div class="fact-value">{regionLabel}</div>
+          </div>
+
+          {portal.data.url && (
+            <div class="fact-row no-border">
+              <div class="fact-label">Website</div>
+              <div class="fact-value">
+                <a
+                  href={portal.data.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="link-inline"
+                >
+                  <span>Zum Datenportal</span>
+                  <span class="link-arrow">🡵</span>
+                </a>
+              </div>
+            </div>
+          )}
+        </SideCard>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .portal-subitems {
+    margin: 0;
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+</style>

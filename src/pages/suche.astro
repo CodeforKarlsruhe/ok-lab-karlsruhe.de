@@ -1,0 +1,536 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHeader from '../components/layout/PageHeader.astro';
+import FilterableGrid from '../components/ui/FilterableGrid.astro';
+import FilterDropdown from '../components/ui/FilterDropdown.astro';
+import EntityCard from '../components/cards/EntityCard.astro';
+import { getCollection } from 'astro:content';
+import { buildSearchDocs } from '../utils/searchDocs';
+
+const searchPills = [
+  { id: 'all', label: 'Alle', count: 0, active: true },
+  { id: 'project', label: 'Projekte', count: 0 },
+  { id: 'event', label: 'Events', count: 0 },
+  { id: 'dataset', label: 'Datensätze', count: 0 },
+  { id: 'protocol', label: 'Protokolle', count: 0 },
+  { id: 'blog', label: 'Blog', count: 0 },
+];
+
+const allPersons = await getCollection('persons');
+const sortedPersons = [...allPersons].sort((a, b) => a.data.name.localeCompare(b.data.name, 'de'));
+
+const allOrganizations = await getCollection('organizations');
+const sortedOrgs = [...allOrganizations].sort((a, b) =>
+  a.data.name.localeCompare(b.data.name, 'de')
+);
+
+const allDocs = await buildSearchDocs();
+const contentDocs = allDocs.filter((d) => !['person', 'tag', 'organization'].includes(d.type));
+
+const tagMap = new Map<string, string>();
+contentDocs.forEach((doc) => {
+  (doc.tags || []).forEach((rawTag) => {
+    const trimmed = rawTag.trim();
+    const key = trimmed.toLowerCase();
+    if (trimmed && !tagMap.has(key)) {
+      tagMap.set(key, trimmed);
+    }
+  });
+});
+const sortedTags = Array.from(tagMap.values()).sort((a, b) => a.localeCompare(b, 'de'));
+
+const dropdownConfigs = [
+  {
+    id: 'tag',
+    label: 'Tags',
+    allLabel: 'Alle Tags',
+    searchPlaceholder: 'Tags filtern…',
+    searchAriaLabel: 'Tags durchsuchen',
+    iconPath:
+      '<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line>',
+    options: sortedTags.map((t) => ({ val: t, name: t })),
+  },
+  {
+    id: 'person',
+    label: 'Mitwirkende',
+    allLabel: 'Alle Personen',
+    searchPlaceholder: 'Mitwirkende filtern…',
+    searchAriaLabel: 'Mitwirkende durchsuchen',
+    iconPath:
+      '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>',
+    options: sortedPersons.map((p) => ({ val: p.id, name: p.data.name })),
+  },
+  {
+    id: 'org',
+    label: 'Organisation',
+    allLabel: 'Alle Organisationen',
+    searchPlaceholder: 'Organisationen filtern…',
+    searchAriaLabel: 'Organisationen durchsuchen',
+    iconPath:
+      '<rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><path d="M9 22v-4h6v4"></path><path d="M8 6h.01"></path><path d="M16 6h.01"></path><path d="M12 6h.01"></path><path d="M12 10h.01"></path><path d="M12 14h.01"></path><path d="M16 10h.01"></path><path d="M16 14h.01"></path><path d="M8 10h.01"></path><path d="M8 14h.01"></path>',
+    options: sortedOrgs.map((o) => ({ val: o.id, name: o.data.name })),
+  },
+];
+---
+
+<Layout title="Suche" activeNav="suche">
+  <main class="search-page">
+    <PageHeader
+      title="Suche"
+      description="Durchsuche alle Projekte, Events, Datensätze, Protokolle, Ideen und Datenportale des OK Lab Karlsruhe."
+    />
+
+    <div class="main-container">
+      <FilterableGrid
+        mode="search"
+        searchId="page-search-input"
+        searchPlaceholder="Suchbegriff eingeben (z. B. Klima, Mobilität, Sensor, Baumkataster)…"
+        searchAriaLabel="Suchbegriff eingeben"
+        pills={searchPills}
+        pillsId="search-filter-pills"
+        pillsDataAttr="data-type"
+        gridId="results-grid"
+        gridClass="results-grid"
+        emptyId="no-results"
+        emptyTitle="Keine Ergebnisse gefunden"
+        emptyDescription="Versuche es mit einem anderen Begriff oder setze die Filter zurück."
+        emptyResetId="btn-reset-search"
+        emptyResetLabel="Filter zurücksetzen"
+      >
+        <!-- Right-aligned searchable dropdowns (Tags | Mitwirkende | Organisation) -->
+        <Fragment slot="right">
+          {dropdownConfigs.map((cfg) => (
+            <FilterDropdown
+              id={cfg.id}
+              label={cfg.label}
+              options={[
+                { id: 'all', label: cfg.allLabel },
+                ...cfg.options.map((opt) => ({ id: opt.val, label: opt.name, name: opt.name })),
+              ]}
+              activeValue="all"
+              searchPlaceholder={cfg.searchPlaceholder}
+              searchAriaLabel={cfg.searchAriaLabel}
+              iconPath={cfg.iconPath}
+              menuRight={true}
+              selectedSpanId={`${cfg.id}-btn-selected`}
+              menuId={`menu-${cfg.id}`}
+              wrapClass={`${cfg.id}-dropdown-wrap`}
+            />
+          ))}
+        </Fragment>
+
+        <div slot="status" class="search-status-bar">
+          <span id="search-status-text" class="status-text">
+            Suchindex wird geladen…
+          </span>
+        </div>
+
+        {contentDocs.map((doc) => (
+          <EntityCard
+            doc={doc}
+            class="search-result-card"
+            data-doc-id={doc.id}
+            data-type={doc.type}
+            data-person-ids={doc.personIds?.join(',') || ''}
+            data-org-ids={doc.organizationIds?.join(',') || ''}
+          />
+        ))}
+      </FilterableGrid>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import Fuse from 'fuse.js';
+  import { type SearchDoc, highlightHtml } from '../utils/search';
+
+  let cachedIndex: SearchDoc[] | null = null;
+  let fuseInstance: Fuse<SearchDoc> | null = null;
+
+  async function initSearchPage() {
+    const input = document.getElementById('page-search-input') as HTMLInputElement | null;
+    const clearBtn =
+      document.getElementById('page-search-input-clear') ||
+      document.getElementById('page-search-clear');
+    const filterPills = document.querySelectorAll(
+      '#search-filter-pills .filter-pill, .filter-pills-row .filter-pill, .filter-pill'
+    );
+    const resultsGrid = document.getElementById('results-grid');
+    const noResults = document.getElementById('no-results');
+    const statusText = document.getElementById('search-status-text');
+    const resetBtn = document.getElementById('btn-reset-search');
+
+    const countEls: Record<string, HTMLElement | null> = {
+      all: document.getElementById('count-all'),
+      project: document.getElementById('count-project'),
+      event: document.getElementById('count-event'),
+      dataset: document.getElementById('count-dataset'),
+      protocol: document.getElementById('count-protocol'),
+      blog: document.getElementById('count-blog'),
+    };
+
+    if (!resultsGrid) return;
+
+    const cardEls = resultsGrid.querySelectorAll<HTMLElement>('.search-result-card');
+    const cardMap = new Map<string, HTMLElement>();
+    const originalTexts = new Map<string, { title: string; desc: string }>();
+
+    cardEls.forEach((card) => {
+      const id = card.dataset.docId;
+      if (id) {
+        cardMap.set(id, card);
+        const titleEl = card.querySelector('.card-title a');
+        const descEl = card.querySelector('.card-description');
+        originalTexts.set(id, {
+          title: titleEl ? titleEl.textContent || '' : '',
+          desc: descEl ? descEl.textContent || '' : '',
+        });
+      }
+    });
+
+    const isContentDoc = (doc: SearchDoc) => !['person', 'tag', 'organization'].includes(doc.type);
+
+    const matchesPillType = (docType: string, pillType: string) => {
+      if (pillType === 'all') return true;
+      if (pillType === 'project') return docType === 'project' || docType === 'idea';
+      if (pillType === 'dataset') return docType === 'dataset' || docType === 'portal';
+      return docType === pillType;
+    };
+
+    let activeType = 'all';
+    const filterState = {
+      tag: { value: 'all', label: '' },
+      person: { value: 'all', label: '' },
+      org: { value: 'all', label: '' },
+    };
+    const defaultLabels: Record<keyof typeof filterState, string> = {
+      tag: 'Tags',
+      person: 'Mitwirkende',
+      org: 'Organisation',
+    };
+
+    // Load search index
+    if (!cachedIndex) {
+      try {
+        const res = await fetch('/search-index.json');
+        if (!res.ok) throw new Error('Failed to load search index');
+        cachedIndex = await res.json();
+      } catch (err) {
+        if (statusText) {
+          statusText.textContent = 'Fehler beim Laden des Suchindex. Bitte Seite neu laden.';
+        }
+        console.error(err);
+        return;
+      }
+    }
+
+    const searchIndex = cachedIndex || [];
+
+    if (!fuseInstance) {
+      fuseInstance = new Fuse(searchIndex, {
+        keys: [
+          { name: 'title', weight: 0.4 },
+          { name: 'personNames', weight: 0.25 },
+          { name: 'organizationNames', weight: 0.2 },
+          { name: 'tags', weight: 0.2 },
+          { name: 'typeLabel', weight: 0.15 },
+          { name: 'category', weight: 0.1 },
+          { name: 'description', weight: 0.05 },
+        ],
+        threshold: 0.38,
+        ignoreLocation: true,
+        includeScore: true,
+      });
+    }
+
+    function resolveIndexName(group: keyof typeof filterState, val: string): string {
+      for (const doc of searchIndex) {
+        if (group === 'person') {
+          if (doc.type === 'person' && doc.id === `person-${val}`) return doc.title;
+          const idx = doc.personIds?.indexOf(val) ?? -1;
+          if (idx !== -1 && doc.personNames?.[idx]) return doc.personNames[idx];
+        } else if (group === 'org') {
+          if (doc.type === 'organization' && doc.id === `org-${val}`) return doc.title;
+          const idx = doc.organizationIds?.indexOf(val) ?? -1;
+          if (idx !== -1 && doc.organizationNames?.[idx]) return doc.organizationNames[idx];
+        } else if (group === 'tag') {
+          const hit = (doc.tags || []).find((t) => t.toLowerCase() === val.toLowerCase());
+          if (hit) return hit;
+        }
+      }
+      return val;
+    }
+
+    function setDropdownFilter(
+      group: keyof typeof filterState,
+      rawValue: string,
+      shouldPerformSearch = true
+    ) {
+      const wrap = document.getElementById(`dropdown-wrap-${group}`);
+      const btn = document.getElementById(`btn-dropdown-${group}`);
+      const btnLabel = btn?.querySelector('.group-btn-label');
+      const btnSelected = document.getElementById(`${group}-btn-selected`);
+      const options = wrap?.querySelectorAll<HTMLButtonElement>('.dropdown-option');
+
+      wrap?.classList.remove('is-open');
+      btn?.setAttribute('aria-expanded', 'false');
+
+      const normalizedInput = rawValue || 'all';
+      const matchedOpt = Array.from(options ?? []).find(
+        (o) => o.dataset.val?.toLowerCase() === normalizedInput.toLowerCase()
+      );
+
+      const resolvedVal = matchedOpt?.dataset.val || normalizedInput;
+
+      if (resolvedVal === 'all') {
+        filterState[group] = { value: 'all', label: '' };
+        btn?.classList.remove('has-selection');
+        if (btnLabel) btnLabel.textContent = defaultLabels[group];
+        if (btnSelected) {
+          btnSelected.textContent = '';
+          btnSelected.classList.add('hidden');
+        }
+        options?.forEach((o) => {
+          const isAll = o.dataset.val === 'all';
+          o.classList.toggle('active', isAll);
+          o.setAttribute('aria-selected', String(isAll));
+        });
+      } else {
+        const displayName = matchedOpt?.dataset.name || resolveIndexName(group, resolvedVal);
+        filterState[group] = { value: resolvedVal, label: displayName };
+        btn?.classList.add('has-selection');
+        if (btnLabel) btnLabel.textContent = `${defaultLabels[group]}:`;
+        if (btnSelected) {
+          btnSelected.textContent = displayName;
+          btnSelected.classList.remove('hidden');
+        }
+        options?.forEach((o) => {
+          const isMatch = o.dataset.val === resolvedVal;
+          o.classList.toggle('active', isMatch);
+          o.setAttribute('aria-selected', String(isMatch));
+        });
+      }
+
+      if (shouldPerformSearch) {
+        performSearch();
+      }
+    }
+
+    function performSearch() {
+      if (!fuseInstance) return;
+
+      const query = input?.value.trim() || '';
+
+      // Update URL query string
+      const params = new URLSearchParams();
+      if (query) params.set('q', query);
+      if (activeType !== 'all') params.set('type', activeType);
+      if (filterState.tag.value !== 'all') params.set('tag', filterState.tag.value);
+      if (filterState.person.value !== 'all') params.set('person', filterState.person.value);
+      if (filterState.org.value !== 'all') params.set('org', filterState.org.value);
+      const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+      window.history.replaceState(null, '', newUrl);
+
+      const basePool = searchIndex.filter(isContentDoc);
+      let matchingPool: SearchDoc[] = query
+        ? fuseInstance
+            .search(query)
+            .map((r) => r.item)
+            .filter(isContentDoc)
+        : basePool;
+
+      if (filterState.tag.value !== 'all') {
+        const tagLower = filterState.tag.value.toLowerCase();
+        matchingPool = matchingPool.filter(
+          (doc) => doc.tags && doc.tags.some((t) => t.toLowerCase() === tagLower)
+        );
+      }
+
+      if (filterState.person.value !== 'all') {
+        matchingPool = matchingPool.filter(
+          (doc) => doc.personIds && doc.personIds.includes(filterState.person.value)
+        );
+      }
+
+      if (filterState.org.value !== 'all') {
+        matchingPool = matchingPool.filter(
+          (doc) => doc.organizationIds && doc.organizationIds.includes(filterState.org.value)
+        );
+      }
+
+      // If activeType has no matches in the matchingPool, gracefully switch to 'all'
+      if (activeType !== 'all') {
+        const hasTypeMatches = matchingPool.some((d) => matchesPillType(d.type, activeType));
+        if (!hasTypeMatches) {
+          activeType = 'all';
+          filterPills.forEach((p) => {
+            p.classList.toggle('active', (p as HTMLElement).dataset.type === 'all');
+          });
+        }
+      }
+
+      updateCounts(matchingPool);
+
+      const filteredResults = matchingPool.filter((doc) => matchesPillType(doc.type, activeType));
+
+      renderResults(filteredResults, query);
+    }
+
+    function updateCounts(matches: SearchDoc[]) {
+      const counts: Record<string, number> = {
+        all: matches.length,
+        project: 0,
+        event: 0,
+        dataset: 0,
+        protocol: 0,
+        blog: 0,
+      };
+
+      matches.forEach((item) => {
+        if (item.type === 'project' || item.type === 'idea') counts.project++;
+        else if (item.type === 'dataset' || item.type === 'portal') counts.dataset++;
+        else if (counts[item.type] !== undefined) counts[item.type]++;
+      });
+
+      Object.entries(counts).forEach(([key, num]) => {
+        const el = countEls[key];
+        if (el) el.textContent = String(num);
+      });
+    }
+
+    function renderResults(items: SearchDoc[], query: string) {
+      if (!resultsGrid || !noResults || !statusText) return;
+
+      if (items.length === 0) {
+        cardEls.forEach((card) => (card.style.display = 'none'));
+        noResults.classList.remove('hidden');
+        statusText.textContent = '';
+        return;
+      }
+
+      noResults.classList.add('hidden');
+      const filterDesc: string[] = [];
+      if (filterState.tag.value !== 'all') filterDesc.push(`Tag "${filterState.tag.label}"`);
+      if (filterState.person.value !== 'all') filterDesc.push(`von ${filterState.person.label}`);
+      if (filterState.org.value !== 'all')
+        filterDesc.push(`Organisation "${filterState.org.label}"`);
+
+      if (filterDesc.length > 0) {
+        const unit = items.length === 1 ? 'Eintrag' : 'Einträge';
+        statusText.textContent = query
+          ? `${items.length} ${unit} (${filterDesc.join(', ')}) für "${query}"`
+          : `${items.length} ${unit} (${filterDesc.join(', ')})`;
+      } else {
+        statusText.textContent = query
+          ? `${items.length} Treffer für "${query}"`
+          : `${items.length} Einträge verfügbar`;
+      }
+
+      const activeIds = new Set(items.map((doc) => doc.id));
+      cardEls.forEach((card) => {
+        if (!activeIds.has(card.dataset.docId || '')) {
+          card.style.display = 'none';
+        }
+      });
+
+      items.forEach((doc) => {
+        const card = cardMap.get(doc.id);
+        if (!card) return;
+        card.style.display = '';
+        resultsGrid.appendChild(card);
+
+        const orig = originalTexts.get(doc.id);
+        if (orig) {
+          const titleEl = card.querySelector('.card-title a');
+          if (titleEl) {
+            titleEl.innerHTML = highlightHtml(orig.title, query);
+          }
+          const descEl = card.querySelector('.card-description');
+          if (descEl && orig.desc) {
+            descEl.innerHTML = highlightHtml(orig.desc, query);
+          }
+        }
+      });
+    }
+
+    // Parse initial URL search params
+    const params = new URLSearchParams(window.location.search);
+    const initialQuery = params.get('q') || '';
+    const rawType = params.get('type') || 'all';
+    const initialType = rawType === 'idea' ? 'project' : rawType === 'portal' ? 'dataset' : rawType;
+    const initialTag = params.get('tag') || 'all';
+    const initialPerson = params.get('person') || 'all';
+    const initialOrg = params.get('org') || params.get('organization') || 'all';
+
+    if (input && initialQuery) {
+      input.value = initialQuery;
+    }
+
+    if (initialType && countEls[initialType]) {
+      activeType = initialType;
+      filterPills.forEach((p) => {
+        p.classList.toggle('active', (p as HTMLElement).dataset.type === initialType);
+      });
+    }
+
+    if (initialTag !== 'all') setDropdownFilter('tag', initialTag, false);
+    if (initialPerson !== 'all') setDropdownFilter('person', initialPerson, false);
+    if (initialOrg !== 'all') setDropdownFilter('org', initialOrg, false);
+
+    performSearch();
+
+    input?.addEventListener('input', () => {
+      performSearch();
+    });
+
+    clearBtn?.addEventListener('click', () => {
+      if (input) {
+        input.value = '';
+        input.focus();
+        performSearch();
+      }
+    });
+
+    filterPills.forEach((pill) => {
+      pill.addEventListener('click', () => {
+        filterPills.forEach((p) => p.classList.remove('active'));
+        pill.classList.add('active');
+        activeType = (pill as HTMLElement).dataset.type || 'all';
+        performSearch();
+      });
+    });
+
+    // Listen to dropdown filter changes from FilterBar
+    document.addEventListener('filter-change', (e: any) => {
+      const grp = e.detail?.group;
+      if (grp === 'tag' || grp === 'person' || grp === 'org') {
+        setDropdownFilter(grp, e.detail.value);
+      }
+    });
+
+    resetBtn?.addEventListener('click', () => {
+      if (input) {
+        input.value = '';
+        const clearBtnEl =
+          document.getElementById('page-search-input-clear') ||
+          document.getElementById('page-search-clear');
+        if (clearBtnEl) clearBtnEl.classList.add('hidden');
+      }
+      activeType = 'all';
+      filterPills.forEach((p) => {
+        p.classList.toggle('active', (p as HTMLElement).dataset.type === 'all');
+      });
+      setDropdownFilter('tag', 'all', false);
+      setDropdownFilter('person', 'all', false);
+      setDropdownFilter('org', 'all', false);
+      performSearch();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSearchPage);
+  } else {
+    initSearchPage();
+  }
+  document.addEventListener('astro:page-load', initSearchPage);
+</script>

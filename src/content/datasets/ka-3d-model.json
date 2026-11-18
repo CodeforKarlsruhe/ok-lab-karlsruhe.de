@@ -1,0 +1,15 @@
+{
+  "title": "3D-Stadtmodell Karlsruhe (Datensatz)",
+  "teaser": "Erkunde Karlsruhe in 3D mit dem LoD2-Stadtmodell und nutze die Daten für eigene Anwendungen.",
+  "description": "Karlsruhe in 3D erkunden: Alle Gebäude stehen als LoD2 (Levels of Detail 2) bereit. Die 3D-Daten können in eigenen Anwendungen verwendet werden. Einfacher Beispielcode für Konvertierung in GLB Meshes (ohne Texturen) ist vorhanden.\n\nUmfangreiches 3D-Stadtmodell für den Digitalen Zwilling, das z.B. als Basis für Mini-City Projekte dient.\n\nGebäude, Gelände, Verkehrsinfrastruktur, Vegetation, Stadtmobiliar und Bäume. Die Daten stehen in verschiedenen Levels of Detail (LoD) bereit, wobei Kernbereiche der Innenstadt sogar fotorealistisch texturiert sind. \n\nAuf der Grundlage des Digitalen Zwillings können komplexe und dynamische Zusammenhänge anschaulich dargestellt werden, sowie mögliche Veränderungen schon vorab in Simulationen getestet werden. \n\nDie 3D-Daten können beim Projekt 'Mini City Karlsruhe' eingesetzt werden, um eine real-daten-basierte 'Comic-Version' in der Computerspielewelt von Roblox nachzubauen. Dieser digitale Zwilling der Stadt Karlsruhe soll zur digitalen Bürgerbeteiligung und zum interaktiven Teilhabe-Tool ausgebaut werden. \n",
+  "publisherIds": ["stadt-karlsruhe-liegenschaftsamt", "stadt-karlsruhe-it"],
+  "url": "https://my.hidrive.com/share/10.0hxq4we#$/ka-3d",
+  "tags": ["Stadtplanung", "Geodaten"],
+  "formats": ["citygml", "glb"],
+  "portalId": "geoportal-karlsruhe",
+  "size": "3GB",
+  "personIds": ["andreas-kugel", "thomas-hauenstein", "sven-klenert", "daniel-schwarz"],
+  "useCases": "Digital Twin, Mini-City Projekte, 3D-Visualisierungen",
+  "image": "/assets/images/datasets/ka-3d-model/image.webp",
+  "imageAlt": "Geodaten & LoD2 Gebäude-Mesh Visualisierung (© Stadt Karlsruhe – Liegenschaftsamt)"
+}

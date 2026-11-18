@@ -1,0 +1,16 @@
+{
+  "title": "Govdata: Das Datenportal für Deutschland",
+  "region": "deutschland",
+  "url": "https://www.govdata.de/",
+  "description": "Das nationale Metadatenportal für Verwaltungsdaten von Bund, Ländern und Kommunen.",
+  "subItems": [
+    {
+      "title": "Über Open Government in Deutschland",
+      "url": "https://www.govdata.de/open-government"
+    },
+    {
+      "title": "High Value Datasets (HVD)",
+      "url": "https://www.govdata.de/suche?tags=hvd"
+    }
+  ]
+}

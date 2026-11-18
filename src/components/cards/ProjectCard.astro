@@ -1,0 +1,103 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getProjectStatusLabel } from '../../content.config';
+import EntityCard from './EntityCard.astro';
+
+interface Props {
+  project?: CollectionEntry<'projects'> | Record<string, any>;
+  id?: string;
+  title?: string;
+  teaser?: string;
+  url?: string;
+  category?: string;
+  scope?: 'internal' | 'external' | 'idea';
+  status?: string;
+  statusBadge?: string;
+  image?: string | null;
+  imageAlt?: string;
+  tags?: string[];
+  repoUrl?: string;
+  projectUrl?: string;
+  featured?: boolean;
+  isExternal?: boolean;
+  slim?: boolean;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  project,
+  id: propId,
+  title: propTitle,
+  teaser: propTeaser,
+  url: propUrl,
+  category: propCategory,
+  scope: propScope,
+  status: propStatus,
+  statusBadge: propStatusBadge,
+  image: propImage,
+  imageAlt: propImageAlt,
+  tags: propTags,
+  repoUrl: _repoUrl,
+  projectUrl: propProjectUrl,
+  featured: _featured,
+  isExternal: propIsExternal,
+  slim = false,
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+const raw = project
+  ? 'data' in project && project.data
+    ? { id: project.id, ...project.data }
+    : project
+  : {};
+
+const id = propId ?? raw.id;
+const title = propTitle ?? raw.title ?? '';
+const teaser = propTeaser ?? raw.teaser ?? '';
+const category = propCategory ?? raw.category;
+const status = propStatus ?? raw.status ?? 'active';
+const image = propImage !== undefined ? propImage : raw.image;
+const imageAlt = propImageAlt ?? raw.imageAlt ?? title;
+const tags = propTags ?? raw.tags ?? [];
+const projectUrl = propProjectUrl ?? raw.projectUrl;
+const rawScope = propScope ?? raw.scope;
+
+const effectiveUrl = propUrl || (id ? `/projekte/${id}` : '#');
+
+const isExternal = Boolean(
+  propIsExternal ||
+  (effectiveUrl && (effectiveUrl.startsWith('http://') || effectiveUrl.startsWith('https://')))
+);
+
+const scope =
+  rawScope ||
+  (status === 'idea'
+    ? 'idea'
+    : propStatusBadge === 'Empfehlung' || isExternal
+      ? 'external'
+      : 'internal');
+
+const statusText = propStatusBadge || raw.statusBadge || getProjectStatusLabel(status, scope);
+const topRight = scope === 'internal' ? statusText : undefined;
+const searchCorpus = `${title} ${teaser} ${tags.join(' ')} ${category || ''}`.toLowerCase();
+---
+
+<EntityCard
+  mode="image"
+  slim={slim}
+  title={title}
+  url={effectiveUrl}
+  image={image}
+  imageAlt={imageAlt}
+  topRight={topRight}
+  category={category}
+  description={teaser}
+  tags={tags}
+  class={`project-card ${className}`}
+  data-category={category || ''}
+  data-status={status}
+  data-search={searchCorpus}
+  {...rest}
+/>

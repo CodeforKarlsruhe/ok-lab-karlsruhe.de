@@ -1,0 +1,80 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import EventCard from '../cards/EventCard.astro';
+import Button from '../ui/Button.astro';
+import { formatEventTime, getEffectiveEventDate, parseDateSafe } from '../../utils/events';
+
+interface Props {
+  rawEvents: CollectionEntry<'events'>[];
+  title: string;
+  highlightEventId?: string;
+  highlightBadge?: string;
+}
+
+const { rawEvents, title, highlightEventId, highlightBadge } = Astro.props;
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const isUpcoming = (ev?: CollectionEntry<'events'>): ev is CollectionEntry<'events'> => {
+  if (!ev) return false;
+  const eff = getEffectiveEventDate(ev);
+  if (!eff) return false;
+  const d = parseDateSafe(eff);
+  return !isNaN(d.getTime()) && d.getTime() >= today.getTime();
+};
+
+const openLab = rawEvents.find((e) => e.id === 'open-lab');
+const hackt = rawEvents.find((e) => e.id === 'okl-hackt');
+const highlightCandidate = highlightEventId
+  ? rawEvents.find((e) => e.id === highlightEventId)
+  : undefined;
+const activeHighlight = isUpcoming(highlightCandidate) ? highlightCandidate : undefined;
+
+const upcomingRegular = [openLab, hackt]
+  .filter((ev): ev is CollectionEntry<'events'> =>
+    Boolean(ev && ev !== activeHighlight && isUpcoming(ev))
+  )
+  .sort(
+    (a, b) =>
+      parseDateSafe(getEffectiveEventDate(a)!).getTime() -
+      parseDateSafe(getEffectiveEventDate(b)!).getTime()
+  )[0];
+
+const cards: Array<{ event?: CollectionEntry<'events'>; category?: string }> = activeHighlight
+  ? [
+      { event: upcomingRegular || openLab },
+      { event: activeHighlight, category: highlightBadge || activeHighlight.data.category },
+    ]
+  : [{ event: openLab }, { event: hackt }];
+
+const visibleCards = cards.filter(
+  (item): item is { event: CollectionEntry<'events'>; category?: string } => Boolean(item.event)
+);
+---
+
+<section class="page-section" id="termine">
+  <div class="section-container">
+    <div class="section-header">
+      <h2>{title}</h2>
+    </div>
+
+    <div class="meetups-grid">
+      {visibleCards.map(({ event, category }) => (
+        <div class="card-wrapper">
+          <EventCard
+            event={event}
+            time={formatEventTime(event.data.startTime, event.data.endTime)}
+            category={category}
+          />
+        </div>
+      ))}
+    </div>
+
+    <div class="center-actions">
+      <Button href="/events" variant="outline" size="md">
+        Alle Termine im Kalender anzeigen
+      </Button>
+    </div>
+  </div>
+</section>

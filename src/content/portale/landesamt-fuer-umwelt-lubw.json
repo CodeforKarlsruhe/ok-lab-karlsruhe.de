@@ -1,0 +1,20 @@
+{
+  "title": "Umweltportal Baden-Württemberg (LUBW)",
+  "region": "badenWuerttemberg",
+  "url": "https://www.lubw.baden-wuerttemberg.de/",
+  "description": "Zentrale Anlaufstelle für Naturschutz-, Wasser- und Luftmessdaten in BW.",
+  "subItems": [
+    {
+      "title": "Umweltportal BW",
+      "url": "https://umweltportal.baden-wuerttemberg.de/umweltdaten"
+    },
+    {
+      "title": "Aktuelle Messwerte",
+      "url": "https://www.lubw.baden-wuerttemberg.de/aktuelle-messwerte"
+    },
+    {
+      "title": "Daten- und Kartendienst (UDO)",
+      "url": "https://udo.lubw.baden-wuerttemberg.de"
+    }
+  ]
+}

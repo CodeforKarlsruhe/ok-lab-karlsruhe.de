@@ -1,0 +1,403 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/layout/PageHeader.astro';
+import ViewSwitcher from '../../components/ui/ViewSwitcher.astro';
+import FilterableGrid from '../../components/ui/FilterableGrid.astro';
+import FilterDropdown from '../../components/ui/FilterDropdown.astro';
+import EventCard from '../../components/cards/EventCard.astro';
+import EntityCard from '../../components/cards/EntityCard.astro';
+import EventViewDropdown from '../../components/events/EventViewDropdown.astro';
+import EventsCalendar from '../../components/events/EventsCalendar.astro';
+import { getCollection } from 'astro:content';
+import {
+  getEffectiveEventDate,
+  parseDateSafe,
+  computeSeriesGrouped,
+  parseEventTimeRange,
+} from '../../utils/events';
+
+const rawEvents = await getCollection('events');
+const allOrganizations = await getCollection('organizations');
+const orgMap = new Map(allOrganizations.map((o) => [o.id, o.data.name]));
+
+const EVENTS = rawEvents.map((e) => ({
+  id: e.id,
+  slug: e.id,
+  ...e.data,
+  description: e.body,
+}));
+
+const EVENT_ORGANIZERS = Array.from(
+  new Set(EVENTS.flatMap((e) => e.organizationIds || []).filter(Boolean))
+)
+  .map((id) => ({ id, name: orgMap.get(id) || id }))
+  .sort((a, b) => {
+    if (a.id === 'ok-lab-karlsruhe') return -1;
+    if (b.id === 'ok-lab-karlsruhe') return 1;
+    return a.name.localeCompare(b.name, 'de');
+  });
+
+const EVENT_CATEGORIES = [
+  'Alle',
+  ...new Set(EVENTS.map((e) => e.category).filter((c): c is string => Boolean(c))),
+];
+
+const eventTabs = [
+  { id: 'cards', label: 'Kacheln', count: EVENTS.length, active: true },
+  { id: 'calendar', label: 'Kalender' },
+];
+
+// Helper: Sort events with pinned first, then date descending
+function sortEvents(list: any[]) {
+  return [...list].sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+
+    const dateStrA = getEffectiveEventDate(a);
+    const dateStrB = getEffectiveEventDate(b);
+    const dateA = dateStrA ? parseDateSafe(dateStrA).getTime() : 0;
+    const dateB = dateStrB ? parseDateSafe(dateStrB).getTime() : 0;
+    return dateB - dateA;
+  });
+}
+
+const seriesRepMap = computeSeriesGrouped(EVENTS);
+const allSortedEvents = sortEvents(EVENTS);
+
+// Specific recurring meetings for banner cards (SSOT via isRegularMeeting)
+const regularMeetings = EVENTS.filter((e) => e.isRegularMeeting);
+const openLabEvent =
+  regularMeetings.find((e) => e.id === 'open-lab') || EVENTS.find((e) => e.id === 'open-lab');
+const hacktEvent =
+  regularMeetings.find((e) => e.id === 'okl-hackt') || EVENTS.find((e) => e.id === 'okl-hackt');
+
+// Prepare events data for FullCalendar: expand recurring dates into distinct calendar entries
+const calendarEvents: any[] = [];
+EVENTS.forEach((ev) => {
+  const rawDates = Array.isArray(ev.dates) && ev.dates.length > 0 ? ev.dates : [];
+
+  const { start: tStart, end: tEnd } = parseEventTimeRange(ev.startTime, ev.endTime);
+
+  rawDates.forEach((d: any, idx: number) => {
+    const dStr =
+      typeof d === 'string'
+        ? d.split('T')[0]
+        : d instanceof Date
+          ? d.toISOString().split('T')[0]
+          : String(d);
+    const start = tStart ? `${dStr}T${tStart.hhmm}:00` : dStr;
+    let end: string | undefined;
+    if (tStart && tEnd) {
+      let endDayStr = dStr;
+      if (tEnd.h * 60 + tEnd.m <= tStart.h * 60 + tStart.m) {
+        const nextDay = parseDateSafe(dStr);
+        nextDay.setDate(nextDay.getDate() + 1);
+        endDayStr = [
+          nextDay.getFullYear(),
+          String(nextDay.getMonth() + 1).padStart(2, '0'),
+          String(nextDay.getDate()).padStart(2, '0'),
+        ].join('-');
+      }
+      end = `${endDayStr}T${tEnd.hhmm}:00`;
+    }
+    calendarEvents.push({
+      id: `${ev.id}-${dStr || idx}`,
+      title: ev.title,
+      start: start,
+      ...(end ? { end } : {}),
+      url: `/events/${ev.id}`,
+      category: ev.category,
+      organizers: (ev.organizationIds || []).map((id: string) => orgMap.get(id) || id),
+      location: ev.location,
+      time: ev.time,
+      description: ev.teaser || ev.description,
+    });
+  });
+});
+---
+
+<Layout title="Termine" activeNav="events">
+  <main class="events-page">
+    <PageHeader
+      title="Termine"
+      description="Treffen, Workshops und Veranstaltungen rund um Open Data in Karlsruhe."
+    />
+
+    <div class="main-container">
+      <!-- Two Recurring Meetings Cards -->
+      <section class="recurring-meetings-section" aria-label="Regelmäßige monatliche Treffen">
+        <div class="meetings-grid">
+          <!-- Card 1: Lab-Treffen (Orga & Austausch) -->
+          <EntityCard
+            mode="image"
+            hideImage={true}
+            title={openLabEvent?.title || 'Open Lab'}
+            description={openLabEvent?.teaser}
+            url="/events/open-lab"
+            actionText="Details ansehen"
+          />
+
+          <!-- Card 2: OK Lab HACKT (Coding Workshop) -->
+          <EntityCard
+            mode="image"
+            hideImage={true}
+            title={hacktEvent?.title || 'OK Lab HACKT'}
+            description={hacktEvent?.teaser}
+            url="/events/okl-hackt"
+            actionText="Details & Anmeldung"
+          />
+        </div>
+      </section>
+
+      <!-- View Switcher Tabs: Kacheln vs Kalender -->
+      <ViewSwitcher tabs={eventTabs} id="events-view-switcher" />
+
+      <!-- Tab 1: Kacheln (Cards) View -->
+      <section class="tab-view active" id="view-cards">
+        <FilterableGrid
+          mode="flat"
+          searchId="event-search"
+          searchPlaceholder="Termine durchsuchen..."
+          searchAriaLabel="Termine durchsuchen"
+          pills={EVENT_CATEGORIES.map((cat) => ({
+            id: cat,
+            label: cat,
+            active: cat === 'Alle',
+          }))}
+          pillsId="category-pills"
+          pillsDataAttr="data-cat"
+          gridId="events-grid"
+          gridClass="events-grid"
+          emptyId="no-events-result"
+          emptyTitle="Keine Termine gefunden"
+          emptyDescription="Passe deine Filtereinstellungen oder Suchbegriffe an."
+          emptyResetId="btn-reset-events"
+        >
+          <Fragment slot="right">
+            <FilterDropdown
+              id="organizer"
+              label="Veranstalter"
+              options={[
+                { id: 'Alle', label: 'Alle Veranstalter' },
+                { id: '__guest__', label: 'Zu Gast (Externe)' },
+                ...EVENT_ORGANIZERS.map((org) => ({ id: org.id, label: org.name })),
+              ]}
+              activeValue="Alle"
+            />
+            <EventViewDropdown />
+          </Fragment>
+
+          {allSortedEvents.map((ev) => {
+            const repInfo = ev.series ? seriesRepMap.get(ev.series) : null;
+            const isRepresentative = !ev.series || (repInfo && repInfo.id === ev.id);
+            const moreCount = repInfo && repInfo.id === ev.id ? repInfo.moreCount : 0;
+
+            return (
+              <EventCard
+                event={ev}
+                isRepresentative={Boolean(isRepresentative)}
+                moreCount={moreCount}
+              />
+            );
+          })}
+        </FilterableGrid>
+      </section>
+
+      <!-- Tab 2: Kalender (FullCalendar) View -->
+      <EventsCalendar calendarEvents={calendarEvents} />
+    </div>
+  </main>
+</Layout>
+
+<script>
+  // @ts-nocheck
+  document.addEventListener('DOMContentLoaded', () => {
+    let currentCategory = 'Alle';
+    let currentOrganizer = 'Alle';
+    let searchQuery = '';
+    let isGrouped = true;
+
+    const tabBtns = document.querySelectorAll('.view-tab-btn');
+    const viewCards = document.getElementById('view-cards');
+    const viewCalendar = document.getElementById('view-calendar');
+    const headerDesc = document.getElementById('hero-desc');
+    const searchInput = document.getElementById('event-search');
+    const catPills = document.querySelectorAll('#category-pills .filter-pill');
+    const cards = document.querySelectorAll('.event-card');
+    const noResults = document.getElementById('no-events-result');
+    const btnReset = document.getElementById('btn-reset-events');
+
+    // View Dropdown
+    const viewDropdown = document.getElementById('view-dropdown');
+    const viewToggleBtn = document.getElementById('view-toggle-btn');
+    const viewMenu = document.getElementById('view-menu');
+    const viewRadios = document.querySelectorAll('input[name="view-mode"]');
+
+    if (viewToggleBtn && viewMenu) {
+      viewToggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.filter-dropdown-wrap.is-open').forEach((wrap) => {
+          wrap.classList.remove('is-open');
+          wrap.querySelector('.group-dropdown-btn')?.setAttribute('aria-expanded', 'false');
+        });
+        const isOpen = viewMenu.classList.toggle('open');
+        viewDropdown?.classList.toggle('is-open', isOpen);
+        viewToggleBtn.setAttribute('aria-expanded', String(isOpen));
+      });
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#view-dropdown')) {
+          viewMenu.classList.remove('open');
+          viewDropdown?.classList.remove('is-open');
+          viewToggleBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    viewRadios.forEach((radio) => {
+      radio.addEventListener('change', (e) => {
+        isGrouped = e.target.value === 'true';
+        viewMenu.classList.remove('open');
+        viewDropdown?.classList.remove('is-open');
+        viewToggleBtn?.setAttribute('aria-expanded', 'false');
+        filterCards();
+      });
+    });
+
+    // Switch View Tabs
+    function switchTab(tabId) {
+      tabBtns.forEach((btn) => {
+        const active = btn.dataset.tab === tabId;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', String(active));
+      });
+
+      if (tabId === 'calendar') {
+        viewCards.classList.remove('active');
+        viewCalendar.classList.add('active');
+        if (headerDesc) {
+          headerDesc.textContent =
+            'Alle Termine, Hackathons und Workshops im interaktiven Kalenderüberblick. Synchronisiert mit unserem öffentlichen Nextcloud-Kalender.';
+        }
+        document.dispatchEvent(new CustomEvent('events:show-calendar'));
+      } else {
+        viewCalendar.classList.remove('active');
+        viewCards.classList.add('active');
+        if (headerDesc) {
+          headerDesc.textContent =
+            'Wir verbinden Menschen durch Technologie und Vernetzung. Mache mit bei unseren Hackathons, Workshops und Meetups in Karlsruhe.';
+        }
+      }
+    }
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // Check hash (#kalender)
+    if (window.location.hash === '#kalender' || window.location.hash === '#calendar') {
+      switchTab('calendar');
+    }
+
+    // Category click
+    catPills.forEach((pill) => {
+      pill.addEventListener('click', () => {
+        catPills.forEach((p) => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentCategory = pill.dataset.cat || 'Alle';
+        filterCards();
+      });
+    });
+
+    // Search input (listening to input handles typing + clearing via ExpandableSearch)
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value.trim().toLowerCase();
+        filterCards();
+      });
+    }
+
+    // Reset button in EmptyState
+    if (btnReset) {
+      btnReset.addEventListener('click', () => {
+        currentCategory = 'Alle';
+        currentOrganizer = 'Alle';
+        searchQuery = '';
+        if (searchInput) {
+          searchInput.value = '';
+          const wrap = searchInput.closest('.expandable-search');
+          if (wrap) wrap.classList.remove('open');
+        }
+        catPills.forEach((p) => {
+          p.classList.toggle(
+            'active',
+            (p.getAttribute('data-cat') || p.textContent.trim()) === 'Alle'
+          );
+        });
+        const orgWrap = document.getElementById('dropdown-wrap-organizer');
+        const orgBtn = document.getElementById('btn-dropdown-organizer');
+        const orgLabel = orgBtn?.querySelector('.group-btn-label');
+        const orgSelected = document.getElementById('selected-organizer');
+        orgWrap?.classList.remove('is-open');
+        orgBtn?.classList.remove('has-selection');
+        orgBtn?.setAttribute('aria-expanded', 'false');
+        if (orgLabel) orgLabel.textContent = 'Veranstalter';
+        if (orgSelected) {
+          orgSelected.textContent = '';
+          orgSelected.classList.add('hidden');
+        }
+        orgWrap?.querySelectorAll('.dropdown-option').forEach((opt) => {
+          const isAll = opt.dataset.val === 'Alle';
+          opt.classList.toggle('active', isAll);
+          opt.setAttribute('aria-selected', String(isAll));
+        });
+        filterCards();
+      });
+    }
+
+    document.addEventListener('filter-change', (e) => {
+      if (e.detail?.group === 'organizer') {
+        currentOrganizer = e.detail.value || 'Alle';
+        filterCards();
+      }
+    });
+
+    // Filter Cards Logic with Series Grouping
+    function filterCards() {
+      let count = 0;
+
+      cards.forEach((card) => {
+        const cat = card.dataset.category;
+        const orgs = (card.dataset.organizers || '').split(',').filter(Boolean);
+        const searchTxt = card.dataset.search || '';
+        const isRepresentative = card.dataset.isRepresentative === 'true';
+
+        const matchesCategory = currentCategory === 'Alle' || cat === currentCategory;
+        const matchesOrganizer =
+          currentOrganizer === 'Alle' ||
+          (currentOrganizer === '__guest__'
+            ? orgs.length > 0 && !orgs.includes('ok-lab-karlsruhe')
+            : orgs.includes(currentOrganizer));
+        const matchesSearch = !searchQuery || searchTxt.includes(searchQuery);
+
+        let matchesGrouping = true;
+        if (isGrouped && !isRepresentative) {
+          matchesGrouping = false;
+        }
+
+        if (matchesCategory && matchesOrganizer && matchesSearch && matchesGrouping) {
+          card.style.display = 'flex';
+          count++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      if (noResults) {
+        noResults.classList.toggle('hidden', count > 0);
+      }
+    }
+
+    // Initial filter run
+    filterCards();
+  });
+</script>

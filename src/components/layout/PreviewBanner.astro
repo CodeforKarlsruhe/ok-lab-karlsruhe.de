@@ -1,0 +1,162 @@
+---
+// PreviewBanner: Permanent banner informing visitors about the preview deployment status.
+---
+
+<aside class="preview-banner" aria-label="Hinweis zur Vorschau-Version">
+  <div class="preview-banner-inner">
+    <div class="preview-banner-content">
+      <span class="preview-badge">
+        <svg
+          class="preview-icon"
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        <strong>Vorschau-Version:</strong>
+      </span>
+      <span class="preview-message">
+        Diese Website befindet sich noch im Aufbau und kann Fehler oder unvollständige Inhalte
+        enthalten. Bitte besuche
+        <a
+          href="https://ok-lab-karlsruhe.de"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="preview-link"
+        >
+          <span>ok-lab-karlsruhe.de</span> <span class="link-arrow">🡵</span>
+        </a>
+        für unsere aktuelle Homepage.
+      </span>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .preview-banner {
+    background-color: var(--color-primary-700, #b83d0d);
+    color: #ffffff;
+    font-size: var(--text-sm, 0.875rem);
+    line-height: 1.4;
+    padding: var(--space-2, 0.5rem) var(--space-4, 1rem);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  }
+
+  .preview-banner-inner {
+    max-width: var(--max-width, 1200px);
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .preview-banner-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-1-5, 0.375rem) var(--space-2, 0.5rem);
+    text-align: center;
+  }
+
+  .preview-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1, 0.25rem);
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+    color: #ffffff;
+  }
+
+  .preview-icon {
+    flex-shrink: 0;
+  }
+
+  .preview-message {
+    font-weight: var(--font-normal, 400);
+  }
+
+  .preview-link {
+    color: #ffffff;
+    font-weight: var(--font-bold, 700);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1.5px;
+    display: inline-inline;
+    white-space: nowrap;
+    gap: 0.2rem;
+    transition: opacity var(--transition-fast, 0.15s ease);
+  }
+
+  .preview-link:hover,
+  .preview-link:focus-visible {
+    opacity: 0.85;
+    text-decoration-thickness: 2px;
+  }
+
+  /* Dark mode: high-contrast dark amber/warm background with vibrant orange badge & link */
+  :root[data-theme='dark'] .preview-banner,
+  [data-theme='dark'] .preview-banner {
+    background-color: #26140b;
+    color: #f5efeb;
+    border-bottom: 1px solid rgba(240, 106, 50, 0.35);
+  }
+
+  :root[data-theme='dark'] .preview-banner .preview-badge,
+  [data-theme='dark'] .preview-banner .preview-badge {
+    color: #fb923c;
+  }
+
+  :root[data-theme='dark'] .preview-banner .preview-link,
+  [data-theme='dark'] .preview-banner .preview-link {
+    color: #fb923c;
+  }
+
+  :root[data-theme='dark'] .preview-banner .preview-link:hover,
+  [data-theme='dark'] .preview-banner .preview-link:focus-visible {
+    color: #fed7aa;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .preview-banner {
+      background-color: #26140b;
+      color: #f5efeb;
+      border-bottom: 1px solid rgba(240, 106, 50, 0.35);
+    }
+
+    :root:not([data-theme='light']) .preview-banner .preview-badge {
+      color: #fb923c;
+    }
+
+    :root:not([data-theme='light']) .preview-banner .preview-link {
+      color: #fb923c;
+    }
+
+    :root:not([data-theme='light']) .preview-banner .preview-link:hover,
+    :root:not([data-theme='light']) .preview-banner .preview-link:focus-visible {
+      color: #fed7aa;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .preview-banner {
+      padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+      font-size: 0.8125rem;
+    }
+  }
+
+  @media print {
+    .preview-banner {
+      display: none !important;
+    }
+  }
+</style>

@@ -1,0 +1,80 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import EntityCard from '../cards/EntityCard.astro';
+import Icon from '../ui/Icon.astro';
+
+interface FocusThemeConfig {
+  title: string;
+  category: string;
+  description: string;
+  icon?: string;
+  projects?: string[];
+}
+
+interface Props {
+  allProjects: CollectionEntry<'projects'>[];
+  focusThemes?: FocusThemeConfig[];
+  themesTitle: string;
+  usedProjectIds?: Set<string>;
+}
+
+const { allProjects, focusThemes = [], themesTitle, usedProjectIds = new Set() } = Astro.props;
+
+const resolvedThemes = focusThemes.map((theme) => {
+  let resolvedProjects: { title: string; url: string }[] = [];
+
+  if (Array.isArray(theme.projects) && theme.projects.length > 0) {
+    resolvedProjects = theme.projects
+      .map((projId) => {
+        const found = allProjects.find((p) => p.id === projId);
+        return found ? { title: found.data.title, url: `/projekte/${found.id}` } : null;
+      })
+      .filter((item): item is { title: string; url: string } => Boolean(item));
+  }
+
+  if (resolvedProjects.length === 0) {
+    resolvedProjects = allProjects
+      .filter((p) => p.data.category === theme.category && !usedProjectIds.has(p.id))
+      .sort((a, b) => {
+        const da = a.data.date ? new Date(a.data.date).getTime() : 0;
+        const db = b.data.date ? new Date(b.data.date).getTime() : 0;
+        return db - da;
+      })
+      .slice(0, 2)
+      .map((p) => ({ title: p.data.title, url: `/projekte/${p.id}` }));
+  }
+
+  return {
+    ...theme,
+    projects: resolvedProjects,
+  };
+});
+---
+
+<!-- Themenschwerpunkte (3 Säulen) -->
+<section class="page-section">
+  <div class="section-container">
+    <div class="section-header">
+      <h2>{themesTitle}</h2>
+    </div>
+
+    <div class="themes-grid">
+      {resolvedThemes.map((theme) => (
+        <div class="card-wrapper">
+          <EntityCard
+            mode="simple"
+            title={theme.title}
+            description={theme.description}
+            links={theme.projects}
+            actionText="Bereich erkunden"
+            url={`/projekte?category=${encodeURIComponent(theme.category)}`}
+          >
+            <Fragment slot="icon">
+              <Icon name={theme.icon} size={20} strokeWidth={1.5} />
+            </Fragment>
+          </EntityCard>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

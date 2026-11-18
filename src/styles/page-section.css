@@ -1,0 +1,208 @@
+/* ============================================================
+   page-section.css — Shared layout & grid styles for overview pages
+   ============================================================ */
+
+/* --- Overview Page Wrappers & Containers --- */
+.projects-page,
+.datasets-page,
+.events-page,
+.protocols-page,
+.tooling-page,
+.blog-page,
+.search-page {
+  background: var(--color-bg);
+  min-height: 80vh;
+}
+
+.main-container {
+  max-width: var(--max-width, 1200px);
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 5rem;
+}
+
+.main-container.narrow {
+  max-width: 780px;
+}
+
+/* --- Tab Panels & Views --- */
+.tab-panel,
+.tab-view {
+  display: none;
+}
+
+.tab-panel.active,
+.tab-view.active {
+  display: block;
+}
+
+/* --- 3-Column Card Grids --- */
+.cards-grid,
+.datasets-grid,
+.portals-grid,
+.orgs-grid,
+.projects-grid,
+.themes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.datasets-grid,
+.portals-grid,
+.orgs-grid {
+  margin-top: var(--space-8, 2rem);
+}
+
+/* --- Auto-fill Card Grids (Events, Search Results) --- */
+.events-grid,
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+/* --- 2-Column Grids (Recurring Meetings, Home Meetups) --- */
+.recurring-meetings-section {
+  margin-bottom: 2.5rem;
+}
+
+.meetings-grid,
+.meetups-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.75rem;
+}
+
+.blog-home-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.75rem;
+  align-items: start;
+}
+
+/* --- Home & Editorial Page Sections --- */
+.page-section {
+  padding: 4.5rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.page-section:nth-of-type(even),
+.page-section.alt {
+  background: var(--color-bg-alt);
+}
+
+.page-section .section-header {
+  margin-bottom: 2.25rem;
+}
+
+.page-section .section-header h2 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.card-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.center-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+
+.cta-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.cta-inner h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  margin: 0 0 0.75rem 0;
+}
+
+.cta-desc {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+  max-width: 600px;
+  margin: 0 auto 2.75rem auto;
+  line-height: 1.6;
+}
+
+.cta-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+/* --- Search Query Term Highlighting --- */
+.highlight-match {
+  font-weight: 700;
+  color: var(--color-text);
+  background: var(--color-primary-light);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* --- Responsive --- */
+@media (max-width: 1024px) {
+  .projects-grid,
+  .themes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .meetups-grid,
+  .blog-home-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 992px) {
+  .cards-grid,
+  .datasets-grid,
+  .portals-grid,
+  .orgs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .meetings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .events-grid,
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-section {
+    padding: 3rem 1.25rem;
+  }
+}
+
+@media (max-width: 650px) {
+  .cards-grid,
+  .datasets-grid,
+  .portals-grid,
+  .orgs-grid,
+  .projects-grid,
+  .themes-grid {
+    grid-template-columns: 1fr;
+  }
+}

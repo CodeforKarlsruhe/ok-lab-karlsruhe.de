@@ -1,0 +1,35 @@
+---
+import Button from '../ui/Button.astro';
+
+interface Props {
+  title: string;
+  text: string;
+  primaryButtonText?: string;
+  secondaryButtonText?: string;
+}
+
+const {
+  title,
+  text,
+  primaryButtonText = 'Nächstes Treffen besuchen',
+  secondaryButtonText = 'Über uns',
+} = Astro.props;
+---
+
+<section class="page-section" id="mitmachen">
+  <div class="section-container">
+    <div class="cta-inner">
+      <h2>{title}</h2>
+      <p class="cta-desc">{text}</p>
+
+      <div class="cta-actions">
+        <Button href="/events" variant="primary" size="md">
+          {primaryButtonText}
+        </Button>
+        <Button href="/about" variant="secondary" size="md">
+          {secondaryButtonText}
+        </Button>
+      </div>
+    </div>
+  </div>
+</section>

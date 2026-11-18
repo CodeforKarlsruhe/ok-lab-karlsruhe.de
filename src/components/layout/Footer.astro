@@ -1,0 +1,276 @@
+---
+import { getEntry } from 'astro:content';
+import Icon from '../ui/Icon.astro';
+
+const currentYear = new Date().getFullYear();
+const footerEntry = await getEntry('footer', 'footer');
+const footer = footerEntry?.data;
+
+const brand = footer?.brand;
+const column1 = footer?.column1;
+const column2 = footer?.column2;
+
+const formatLink = (name: string, url: string) => {
+  const isExternal = url.startsWith('http') || url.startsWith('//');
+  const cleanName = name.replace(/\s*🡵$/, '').trim();
+  return {
+    displayName: cleanName,
+    isExternal,
+  };
+};
+
+const rawLeft = footer?.bottom?.leftText || '';
+const formattedLeftText = rawLeft.includes('{year}')
+  ? rawLeft.replace('{year}', String(currentYear))
+  : rawLeft
+    ? rawLeft.startsWith('©') || rawLeft.startsWith('&copy;')
+      ? rawLeft
+      : `© ${currentYear} ${rawLeft}`
+    : '';
+
+const sourceLabel = footer?.bottom?.sourceLabel || '';
+const sourceUrl = footer?.bottom?.sourceUrl || '';
+const rightText = footer?.bottom?.rightText || '';
+---
+
+<footer>
+  <div class="footer-container">
+    <div class="footer-grid">
+      {brand && (
+        <div class="footer-brand">
+          {brand.title && <h3>{brand.title}</h3>}
+          {brand.subtitle && <p>{brand.subtitle}</p>}
+          {brand.description && <p>{brand.description}</p>}
+          {brand.links && brand.links.length > 0 && (
+            <div class="social-links">
+              {brand.links.map((link) => (
+                <a
+                  href={link.url}
+                  target={link.url.startsWith('http') ? '_blank' : undefined}
+                  rel={link.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  class="social-link"
+                  aria-label={link.name}
+                  title={link.name}
+                >
+                  {link.icon ? (
+                    <Icon name={link.icon} size={15} strokeWidth={1.75} />
+                  ) : (
+                    <span>{link.name.slice(0, 2)}</span>
+                  )}
+                </a>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {column1 && (
+        <div class="footer-col">
+          {column1.title && <h4>{column1.title}</h4>}
+          {column1.links && column1.links.length > 0 && (
+            <ul>
+              {column1.links.map((link) => {
+                const { displayName, isExternal } = formatLink(link.name, link.url);
+                return (
+                  <li>
+                    <a
+                      href={link.url}
+                      target={isExternal ? '_blank' : undefined}
+                      rel={isExternal ? 'noopener noreferrer' : undefined}
+                    >
+                      <span>{displayName}</span>
+                      {isExternal && <span class="link-arrow">🡵</span>}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {column2 && (
+        <div class="footer-col">
+          {column2.title && <h4>{column2.title}</h4>}
+          {column2.links && column2.links.length > 0 && (
+            <ul>
+              {column2.links.map((link) => {
+                const { displayName, isExternal } = formatLink(link.name, link.url);
+                return (
+                  <li>
+                    <a
+                      href={link.url}
+                      target={isExternal ? '_blank' : undefined}
+                      rel={isExternal ? 'noopener noreferrer' : undefined}
+                    >
+                      <span>{displayName}</span>
+                      {isExternal && <span class="link-arrow">🡵</span>}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+
+    {(formattedLeftText || sourceLabel || rightText) && (
+      <div class="footer-bottom">
+        {(formattedLeftText || sourceLabel) && (
+          <span>
+            {formattedLeftText}
+            {formattedLeftText && sourceLabel && sourceUrl && ' • '}
+            {sourceLabel && sourceUrl && (
+              <a
+                href={sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="footer-source-link"
+              >
+                {sourceLabel}
+              </a>
+            )}
+          </span>
+        )}
+        {rightText && <span>{rightText}</span>}
+      </div>
+    )}
+  </div>
+</footer>
+
+<style>
+  footer {
+    background-color: var(--color-bg-section);
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-20);
+    transition:
+      background-color var(--transition-base),
+      border-color var(--transition-base);
+  }
+
+  .footer-container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: var(--space-12) var(--space-6) var(--space-10);
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: var(--space-12);
+    margin-bottom: var(--space-10);
+  }
+
+  .footer-brand h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-bold);
+    color: var(--color-text);
+    margin: 0 0 var(--space-2) 0;
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .footer-brand p {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--leading-relaxed);
+    margin: 0 0 var(--space-1) 0;
+  }
+
+  .social-links {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-5);
+  }
+
+  .social-link {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .social-link:hover {
+    background-color: var(--color-primary-light);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .footer-col h4 {
+    font-size: var(--text-xs);
+    font-weight: var(--font-bold);
+    color: var(--color-text);
+    margin: 0 0 var(--space-3) 0;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+  }
+
+  .footer-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .footer-col li {
+    margin-bottom: var(--space-2);
+  }
+
+  .footer-col a {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .footer-col a:hover {
+    color: var(--color-primary);
+  }
+
+  .footer-bottom {
+    border-top: 1px solid var(--color-border-subtle);
+    padding-top: var(--space-6);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .footer-bottom span {
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+
+  .footer-source-link {
+    color: inherit;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .footer-source-link:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+
+  @media (max-width: 860px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-8);
+    }
+  }
+
+  @media print {
+    footer {
+      display: none !important;
+    }
+  }
+</style>

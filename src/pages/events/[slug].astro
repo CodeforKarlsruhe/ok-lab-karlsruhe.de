@@ -1,0 +1,261 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/layout/Breadcrumb.astro';
+import DatasetCard from '../../components/cards/DatasetCard.astro';
+import EventCard from '../../components/cards/EventCard.astro';
+import EventDetailHeader from '../../components/events/EventDetailHeader.astro';
+import EventDatesSection from '../../components/events/EventDatesSection.astro';
+import EventGallery from '../../components/events/EventGallery.astro';
+import EventSchedule from '../../components/events/EventSchedule.astro';
+import EventDetailSidebar from '../../components/events/EventDetailSidebar.astro';
+import BlogTimeline from '../../components/blog/BlogTimeline.astro';
+import EntityPrintSheets from '../../components/print/EntityPrintSheets.astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import {
+  getSeriesInfo,
+  getEffectiveEventDate,
+  getEventDayMonth,
+  formatEventDates,
+  parseEventDatesList,
+  parseDateSafe,
+  type ParsedEventDate,
+} from '../../utils/events';
+import { stripMarkdown } from '../../utils/qrcode';
+
+export async function getStaticPaths() {
+  const allEvents = await getCollection('events');
+  const normalizedEvents = allEvents.map((e) => ({
+    id: e.id,
+    slug: e.id,
+    ...e.data,
+    description: e.body,
+  }));
+
+  return allEvents.map((ev) => ({
+    params: { slug: ev.id },
+    props: {
+      eventEntry: ev,
+      allEvents: normalizedEvents,
+    },
+  }));
+}
+
+interface Props {
+  eventEntry: any;
+  allEvents: any[];
+}
+
+const { eventEntry, allEvents } = Astro.props;
+const { Content } = await render(eventEntry);
+const event = {
+  id: eventEntry.id,
+  slug: eventEntry.id,
+  ...eventEntry.data,
+  time: eventEntry.data.time?.trim() || 'TBA',
+  description: eventEntry.body,
+};
+
+const seriesInfo = getSeriesInfo(event.id, allEvents);
+const otherSeriesEvents = (seriesInfo?.seriesEvents || [])
+  .filter((se: any) => se.id !== event.id)
+  .map((se: any) => allEvents.find((e) => e.id === se.id))
+  .filter((e: any): e is any => Boolean(e))
+  .sort(
+    (a: any, b: any) =>
+      parseDateSafe(getEffectiveEventDate(b) || 0).getTime() -
+      parseDateSafe(getEffectiveEventDate(a) || 0).getTime()
+  );
+
+const [allDatasets, allPersons, allOrganizations, allProjects] = await Promise.all([
+  getCollection('datasets'),
+  getCollection('persons'),
+  getCollection('organizations'),
+  getCollection('projects'),
+]);
+
+const linkedDatasets: CollectionEntry<'datasets'>[] = (event.datasetIds || [])
+  .map((id: string) => allDatasets.find((d) => d.id === id))
+  .filter((ds: CollectionEntry<'datasets'> | undefined): ds is CollectionEntry<'datasets'> =>
+    Boolean(ds)
+  );
+
+const resolvedPersons: CollectionEntry<'persons'>[] = (event.personIds || [])
+  .map((pId: string) =>
+    allPersons.find((p) => p.id === pId || p.data.name.toLowerCase() === pId.toLowerCase())
+  )
+  .filter((p: CollectionEntry<'persons'> | undefined): p is CollectionEntry<'persons'> =>
+    Boolean(p)
+  );
+
+const resolvedOrganizations: CollectionEntry<'organizations'>[] = (event.organizationIds || [])
+  .map((oId: string) => allOrganizations.find((o) => o.id === oId))
+  .filter(
+    (o: CollectionEntry<'organizations'> | undefined): o is CollectionEntry<'organizations'> =>
+      Boolean(o)
+  );
+
+const resolvedProjects: CollectionEntry<'projects'>[] = (event.projectIds || [])
+  .map((prId: string) => allProjects.find((p) => p.id === prId))
+  .filter((p: CollectionEntry<'projects'> | undefined): p is CollectionEntry<'projects'> =>
+    Boolean(p)
+  );
+
+const { day: dayStr, month: monthStr } = getEventDayMonth(event);
+const formattedEventDate = formatEventDates(event);
+
+const availableViews: { id: string; label: string }[] = [{ id: 'infos', label: 'Infos' }];
+if (event.schedule && event.schedule.length > 0) {
+  availableViews.push({ id: 'zeitplan', label: 'Zeitplan' });
+}
+if (linkedDatasets && linkedDatasets.length > 0) {
+  availableViews.push({ id: 'datensaetze', label: 'Datensätze' });
+}
+const showViewSelector = availableViews.length > 1;
+
+const parsedDates = parseEventDatesList(event);
+const upcomingDates = parsedDates
+  .filter((d: ParsedEventDate) => d.isUpcoming)
+  .sort((a: ParsedEventDate, b: ParsedEventDate) => a.timestamp - b.timestamp);
+const pastDates = parsedDates
+  .filter((d: ParsedEventDate) => !d.isUpcoming)
+  .sort((a: ParsedEventDate, b: ParsedEventDate) => b.timestamp - a.timestamp);
+
+const factsList = (event.facts || []).filter((f: any) => Boolean(f.value));
+const eImg = event.image ? (event.image.startsWith('/') ? event.image : `/${event.image}`) : null;
+const eventGalleryUrls: string[] = (event.galleryImages || [])
+  .map((img: string | { image?: string; url?: string }) =>
+    typeof img === 'string' ? img : img.image || img.url || ''
+  )
+  .filter(Boolean);
+const eventTimeText =
+  [formattedEventDate, event.time !== 'TBA' ? event.time : ''].filter(Boolean).join(', ') ||
+  event.rhythm ||
+  '';
+---
+
+<Layout title={event.title} activeNav="events">
+  <div class="container event-detail-page">
+    <Breadcrumb href="/events" label="Zurück zur Terminübersicht" />
+
+    <EventDetailHeader
+      event={event}
+      dayStr={dayStr}
+      monthStr={monthStr}
+      formattedEventDate={formattedEventDate}
+      availableViews={availableViews}
+      showViewSelector={showViewSelector}
+    />
+
+    <div class={`layout-grid ${showViewSelector ? 'has-view-selector' : ''}`}>
+      <div class="content-col">
+        <div class="view-panel active" data-view-panel="infos" role="tabpanel">
+          <div class="description-box markdown-body">
+            <Content />
+          </div>
+
+          {event.galleryImages && event.galleryImages.length > 0 && (
+            <EventGallery images={event.galleryImages} eventTitle={event.title} />
+          )}
+
+          <BlogTimeline entityType="event" entityId={event.id} heading="Erwähnt im Blog" />
+
+          <EventDatesSection event={event} upcomingDates={upcomingDates} pastDates={pastDates} />
+
+          {otherSeriesEvents.length > 0 && (
+            <div class="past-editions-block">
+              <h3 class="section-title">Vergangene Ausgaben</h3>
+              <div class="linked-datasets-grid">
+                {otherSeriesEvents.map((ev) => (
+                  <EventCard event={ev} slim={true} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {event.schedule && event.schedule.length > 0 && (
+          <div
+            class={`view-panel ${!showViewSelector ? 'active' : ''}`}
+            data-view-panel="zeitplan"
+            role="tabpanel"
+          >
+            <EventSchedule schedule={event.schedule} />
+          </div>
+        )}
+
+        {linkedDatasets.length > 0 && (
+          <div
+            class={`view-panel ${!showViewSelector ? 'active' : ''}`}
+            data-view-panel="datensaetze"
+            role="tabpanel"
+          >
+            <div class="datasets-section">
+              <div class="section-title">Verfügbare Datensätze</div>
+              <div class="linked-datasets-grid">
+                {linkedDatasets.map((ds) => (
+                  <DatasetCard dataset={ds} organizations={allOrganizations} slim={true} />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <EventDetailSidebar
+        event={event}
+        factsList={factsList}
+        resolvedProjects={resolvedProjects}
+        resolvedOrganizations={resolvedOrganizations}
+        resolvedPersons={resolvedPersons}
+      />
+    </div>
+
+    <EntityPrintSheets
+      typeLabel={event.category || 'Termin-Steckbrief'}
+      title={event.title}
+      teaser={event.teaser || ''}
+      description={stripMarkdown(event.description) || event.teaser || ''}
+      image={eImg}
+      galleryImages={eventGalleryUrls}
+      topMeta={[
+        {
+          label: 'Sprecher / Beteiligte',
+          value: resolvedPersons.map((p) => p.data.name).join(', '),
+        },
+        { label: 'Themen', value: (event.tags || []).join(', ') },
+        {
+          label: 'Format',
+          value:
+            event.category || (event.isRegularMeeting ? 'Regelmäßiges Treffen' : 'Veranstaltung'),
+        },
+        { label: 'Zeit', value: eventTimeText },
+      ]}
+      bottomMeta={[
+        ...factsList.map((f: { key: string; value: string }) => ({
+          label: f.key,
+          value: f.value,
+        })),
+        { label: 'Ort', value: event.location || '' },
+        { label: 'Anmeldung', value: event.registrationUrl || '', mono: true },
+      ]}
+      canonicalUrl={`https://ok-lab-karlsruhe.de/events/${event.id}`}
+      displayUrl={`ok-lab-karlsruhe.de/events/${event.id}`}
+      badges={[...resolvedOrganizations.map((o) => o.data.name), ...(event.tags || []).slice(0, 3)]}
+      accentColor="#fce9dc"
+    />
+  </div>
+</Layout>
+
+<style>
+  @media print {
+    .event-detail-page {
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .event-detail-page > :global(*:not(.entity-print-sheets)) {
+      display: none !important;
+    }
+  }
+</style>

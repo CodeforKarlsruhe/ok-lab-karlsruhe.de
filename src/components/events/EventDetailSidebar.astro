@@ -1,0 +1,150 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Button from '../ui/Button.astro';
+import TagPill from '../ui/TagPill.astro';
+import SideCard from '../cards/SideCard.astro';
+import PrintModeMenu from '../print/PrintModeMenu.astro';
+
+interface Props {
+  event: any;
+  factsList: { key: string; value: string }[];
+  resolvedProjects: CollectionEntry<'projects'>[];
+  resolvedOrganizations: CollectionEntry<'organizations'>[];
+  resolvedPersons: CollectionEntry<'persons'>[];
+}
+
+const { event, factsList, resolvedProjects, resolvedOrganizations, resolvedPersons } = Astro.props;
+---
+
+<div class="sidebar-col">
+  {(event.registrationOpen || event.registrationText || event.registrationTitle) && (
+    <SideCard accent={true} title={event.registrationTitle || 'Interesse?'}>
+      {event.registrationText && <p class="accent-desc">{event.registrationText}</p>}
+      {event.registrationOpen && event.registrationUrl && (
+        <div style="margin-bottom: 0.75rem;">
+          <Button
+            variant="primary"
+            href={event.registrationUrl}
+            external={true}
+            style="width: 100%; justify-content: center;"
+          >
+            <span>{event.registrationButton || 'Jetzt anmelden'}</span>
+            <span class="link-arrow">🡵</span>
+          </Button>
+        </div>
+      )}
+      <Button
+        variant="outline"
+        href={`mailto:${event.registrationMail || 'info@ok-lab-karlsruhe.de'}`}
+        style="width: 100%; justify-content: center;"
+      >
+        <svg
+          slot="icon-left"
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+        <span>Kontakt aufnehmen</span>
+      </Button>
+    </SideCard>
+  )}
+
+  {(factsList.length > 0 || (event.tags && event.tags.length > 0)) && (
+    <SideCard title="Fakten">
+      {factsList.map(({ key, value }: { key: string; value: string }) => (
+        <div class="fact-row inline">
+          <span class="fact-label">{key}</span>
+          <span class="fact-value">{value}</span>
+        </div>
+      ))}
+      {event.tags && event.tags.length > 0 && (
+        <div class="fact-row">
+          <div class="fact-label">Tags</div>
+          <div class="tags-container">
+            {event.tags.map((t: string) => (
+              <TagPill variant="tag" href={`/suche?tag=${encodeURIComponent(t)}`}>
+                {t}
+              </TagPill>
+            ))}
+          </div>
+        </div>
+      )}
+    </SideCard>
+  )}
+
+  {resolvedProjects.length > 0 && (
+    <SideCard title="Zugehörige Projekte">
+      <ul>
+        {resolvedProjects.map((proj) => (
+          <li>
+            <a href={`/projekte/${proj.id}`} class="link-subtle">
+              {proj.data.title}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </SideCard>
+  )}
+
+  {resolvedOrganizations.length > 0 && (
+    <SideCard title="Veranstalter">
+      <ul>
+        {resolvedOrganizations.map((org) => (
+          <li>
+            {org.data.url ? (
+              <a href={org.data.url} target="_blank" rel="noopener noreferrer" class="link-subtle">
+                <span>{org.data.name}</span> <span class="link-arrow">🡵</span>
+              </a>
+            ) : (
+              <span>{org.data.name}</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </SideCard>
+  )}
+
+  {resolvedPersons.length > 0 && (
+    <SideCard title="Mitwirkende">
+      <ul>
+        {resolvedPersons.map((p) => (
+          <li>
+            <a
+              href={`/suche?person=${p.id}`}
+              class="link-subtle"
+              title={`Alle Aktivitäten von ${p.data.name} anzeigen`}
+            >
+              {p.data.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </SideCard>
+  )}
+
+  {event.externalLinks && event.externalLinks.length > 0 && (
+    <SideCard title="Links">
+      <ul>
+        {event.externalLinks.map((l: any) => (
+          <li>
+            <a href={l.url} target="_blank" rel="noopener noreferrer" class="link-action">
+              <span>{l.name || l.title || 'Link'}</span>
+              <span class="link-arrow">🡵</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </SideCard>
+  )}
+
+  <PrintModeMenu />
+</div>

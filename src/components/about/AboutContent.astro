@@ -1,0 +1,36 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { PersonGridItem } from '../ui/PersonGrid.astro';
+import AboutVisionSection from './AboutVisionSection.astro';
+import AboutPrinciplesSection from './AboutPrinciplesSection.astro';
+import AboutParticipationSection from './AboutParticipationSection.astro';
+import AboutTeamSection from './AboutTeamSection.astro';
+import AboutCocSection from './AboutCocSection.astro';
+
+interface Props {
+  about: any;
+  openLabEvent?: CollectionEntry<'events'>;
+  hacktEvent?: CollectionEntry<'events'>;
+  calendarFeedUrl: string;
+  contactMail: string;
+  teamMembers: PersonGridItem[];
+}
+
+const { about, openLabEvent, hacktEvent, calendarFeedUrl, contactMail, teamMembers } = Astro.props;
+---
+
+<AboutVisionSection vision={about?.vision} whoWeAre={about?.whoWeAre} />
+
+<AboutPrinciplesSection principles={about?.principles} />
+
+<AboutParticipationSection
+  participation={about?.participation}
+  openLabEvent={openLabEvent}
+  hacktEvent={hacktEvent}
+  calendarFeedUrl={calendarFeedUrl}
+  contactMail={contactMail}
+/>
+
+<AboutTeamSection teamMembers={teamMembers} />
+
+<AboutCocSection coc={about?.coc} />

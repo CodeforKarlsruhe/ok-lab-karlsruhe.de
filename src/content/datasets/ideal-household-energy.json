@@ -1,0 +1,13 @@
+{
+  "title": "IDEAL Household Energy Dataset - Energiedaten",
+  "teaser": "Stromverbrauchsdaten von 255 Haushalten für Lastprognosen und Smart-Home-Forschung.",
+  "description": "Enthält Daten zum Energieverbrauch aus 255 Haushalten im Vereinigten Königreich. Auf Basis der Stromdaten und optional weiteren Informationen soll eine Prognose für den Stromverbrauch eines bestimmten Haushalts für jede Viertelstunde des nächsten Tages erstellt werden. Es stehen euch sowohl die Rohdaten als auch bereits vorverarbeitete Daten zur Verfügung. Die Güte eures Prognosemodells könnt ihr mit der bereitgestellten Baseline-Prognose eines ARIMA-Modells vergleichen. Passwort: odd2025",
+  "publisherIds": ["fzi"],
+  "url": "https://my.hidrive.com/share/7tham.o1ma#$/fzi",
+  "tags": ["Energie", "Smart Home"],
+  "formats": ["csv"],
+  "size": "Stromverbrauchsdaten 255 Haushalte",
+  "personIds": [],
+  "useCases": "Lastprognosen, Solaratlas-Anbindung, Energiemanagement-Forschung",
+  "image": "/assets/images/datasets/ideal-household-energy/image.webp"
+}

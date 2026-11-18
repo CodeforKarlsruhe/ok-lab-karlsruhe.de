@@ -1,0 +1,12 @@
+{
+  "title": "Auswertung Open Data Portale (CKAN-Schnittstellen)",
+  "region": "deutschland",
+  "url": "https://public.tableau.com/app/profile/michael.riedm.ller/viz/bersichtV2OpenDataPortale/Dashboard1#1",
+  "description": "Automatisierter Abgleich und Vergleich von CKAN-Portalen in Deutschland.",
+  "subItems": [
+    {
+      "title": "Dokumentation zum Projekt",
+      "url": "https://ok-lab-karlsruhe.de/projekte/odportals/"
+    }
+  ]
+}

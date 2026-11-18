@@ -1,0 +1,14 @@
+{
+  "title": "Stadtteilprofile",
+  "teaser": "Umfangreiche statistische Profile, Zahlen und Kennwerte zu allen Stadtteilen Karlsruhes.",
+  "description": "Die statistische Sonderveröffentlichung 'Stadtteilprofile Karlsruhe' enthält die wichtigsten Zahlen und Fakten zu den Karlsruher Stadtteilen und bietet einen systematischen und leicht verständlichen Überblick über die Struktur und Entwicklung aller Stadtteile. Abgebildet werden die wichtigsten Meilensteine der Geschichte der Stadtteile und many weitere Themengebiete wie beispielsweise Bevölkerung, Wirtschaft, Sicherheit, Soziale Infrastruktur, Sportstätten, Kultur und Bildung. Zahlen und Fakten zu den Karlsruher Stadtteilen werden als pdf-Datei bereitgestellt",
+  "publisherIds": ["stadt-karlsruhe-stadtentwicklung"],
+  "url": "https://ok-lab-karlsruhe.de/projects/karlsruhe/odd2024/data/Stadtteilprofile.zip",
+  "tags": ["Bildung", "Gesellschaft", "Verkehr", "Wirtschaft"],
+  "formats": ["pdf", "xlsx"],
+  "portalId": "statistikatlas-karlsruhe",
+  "size": "220 Seiten plus Karten",
+  "personIds": ["josef-attmann"],
+  "useCases": "Spiel Digital Twin zu Karlsruhe – Stadtteile bauen",
+  "image": "/assets/images/datasets/ka-stadtteilprofile/image.webp"
+}

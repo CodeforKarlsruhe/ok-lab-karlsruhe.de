@@ -1,0 +1,6 @@
+{
+  "title": "Test Area Autonomous Driving Baden-Württemberg Dataset",
+  "region": "karlsruhe",
+  "url": "https://github.com/fzi-forschungszentrum-informatik/test-area-autonomous-driving-dataset",
+  "description": "Fahrstrecken, Verkehrssignale und Karten des FZI."
+}

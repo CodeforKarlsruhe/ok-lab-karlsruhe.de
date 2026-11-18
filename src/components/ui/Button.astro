@@ -1,0 +1,183 @@
+---
+interface Props {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  href?: string;
+  target?: string;
+  rel?: string;
+  external?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+  class?: string;
+  id?: string;
+  title?: string;
+  ariaLabel?: string;
+  [key: string]: any;
+}
+
+const {
+  variant = 'primary',
+  size = 'md',
+  href,
+  target: propTarget,
+  rel,
+  external,
+  type = 'button',
+  class: className = '',
+  id,
+  title,
+  ariaLabel,
+  ...rest
+} = Astro.props;
+
+const target = propTarget || (external ? '_blank' : undefined);
+const Tag = href ? 'a' : 'button';
+const computedRel = target === '_blank' && !rel ? 'noopener noreferrer' : rel;
+const classes = ['btn', `btn-${variant}`, `btn-${size}`, className].filter(Boolean).join(' ');
+---
+
+<Tag
+  href={href}
+  target={target}
+  rel={computedRel}
+  type={!href ? type : undefined}
+  class={classes}
+  id={id}
+  title={title}
+  aria-label={ariaLabel}
+  {...rest}
+>
+  <slot name="icon-left" />
+  <slot />
+  <slot name="icon-right" />
+</Tag>
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--btn-gap, var(--space-2));
+    padding: var(--btn-padding-y, 0.625rem) var(--btn-padding-x, 1.125rem);
+    font-family: var(--btn-font-family, var(--font-family));
+    font-size: var(--btn-font-size, var(--text-sm));
+    font-weight: var(--btn-font-weight, var(--font-medium));
+    line-height: var(--leading-none);
+    border-radius: var(--btn-radius, var(--radius-lg));
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: var(--btn-transition);
+    white-space: nowrap;
+    user-select: none;
+    box-sizing: border-box;
+  }
+
+  .btn:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
+
+  /* Variants */
+  .btn-primary {
+    --btn-bg: var(--color-primary);
+    --btn-border: var(--color-primary);
+    --btn-text: var(--color-primary-contrast);
+    --btn-hover-bg: var(--color-primary-hover);
+    --btn-hover-border: var(--color-primary-hover);
+
+    background-color: var(--btn-bg);
+    border-color: var(--btn-border);
+    color: var(--btn-text);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--btn-hover-bg);
+    border-color: var(--btn-hover-border);
+    color: var(--btn-text);
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-primary:active {
+    background-color: var(--color-primary-active);
+    transform: translateY(0);
+  }
+
+  .btn-secondary {
+    --btn-bg: var(--color-secondary);
+    --btn-border: var(--color-secondary);
+    --btn-text: var(--color-secondary-contrast);
+    --btn-hover-bg: var(--color-secondary-hover);
+    --btn-hover-border: var(--color-secondary-hover);
+
+    background-color: var(--btn-bg);
+    border-color: var(--btn-border);
+    color: var(--btn-text);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--btn-hover-bg);
+    border-color: var(--btn-hover-border);
+    color: var(--btn-text);
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+
+  .btn-outline {
+    --btn-bg: transparent;
+    --btn-border: var(--color-border);
+    --btn-text: var(--color-text);
+    --btn-hover-bg: var(--color-bg-alt);
+    --btn-hover-border: var(--color-border-strong);
+
+    background-color: var(--btn-bg);
+    border-color: var(--btn-border);
+    color: var(--btn-text);
+  }
+
+  .btn-outline:hover {
+    background-color: var(--btn-hover-bg);
+    border-color: var(--btn-hover-border);
+    text-decoration: none;
+  }
+
+  .btn-ghost {
+    --btn-bg: transparent;
+    --btn-border: transparent;
+    --btn-text: var(--color-text-secondary);
+    --btn-hover-bg: var(--color-primary-light);
+
+    background-color: var(--btn-bg);
+    border-color: var(--btn-border);
+    color: var(--btn-text);
+  }
+
+  .btn-ghost:hover {
+    background-color: var(--btn-hover-bg);
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  /* Sizes */
+  .btn-sm {
+    padding: 0.35rem 0.75rem;
+    font-size: var(--text-xs);
+    border-radius: var(--radius-md);
+  }
+
+  .btn-md {
+    padding: 0.55rem 1rem;
+    font-size: var(--text-sm);
+    border-radius: var(--radius-lg);
+  }
+
+  .btn-lg {
+    padding: 0.75rem 1.4rem;
+    font-size: var(--text-base);
+    border-radius: var(--radius-lg);
+    font-weight: var(--font-semibold);
+  }
+</style>

@@ -1,0 +1,238 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumb from '../../components/layout/Breadcrumb.astro';
+import DetailHeader from '../../components/layout/DetailHeader.astro';
+import Button from '../../components/ui/Button.astro';
+import RelatedProjects from '../../components/projects/RelatedProjects.astro';
+import ProjectDetailSidebar from '../../components/projects/ProjectDetailSidebar.astro';
+import BlogTimeline from '../../components/blog/BlogTimeline.astro';
+import DatasetCard from '../../components/cards/DatasetCard.astro';
+import EventCard from '../../components/cards/EventCard.astro';
+import EntityPrintSheets from '../../components/print/EntityPrintSheets.astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { getProjectStatusLabel } from '../../content.config';
+import { getEffectiveEventDate, parseDateSafe } from '../../utils/events';
+import { stripMarkdown } from '../../utils/qrcode';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((p) => ({
+    params: { slug: p.id },
+    props: { project: p },
+  }));
+}
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const isIdea = project.data.scope === 'idea';
+const isExternal = project.data.scope === 'external';
+
+// Load related collections for Knowledge Graph resolution
+const [allDatasets, allProtocols, allProjects, allPersons, allOrganizations, allEvents] =
+  await Promise.all([
+    getCollection('datasets'),
+    getCollection('protocols'),
+    getCollection('projects'),
+    getCollection('persons'),
+    getCollection('organizations'),
+    getCollection('events'),
+  ]);
+
+const resolvedPersons = (project.data.personIds || [])
+  .map((id: string) => allPersons.find((p) => p.id === id))
+  .filter((p): p is CollectionEntry<'persons'> => Boolean(p));
+
+const resolvedOrganizations = (project.data.organizationIds || [])
+  .map((id: string) => allOrganizations.find((o) => o.id === id))
+  .filter((o): o is CollectionEntry<'organizations'> => Boolean(o));
+
+const relatedEvents = allEvents
+  .filter((ev) => (ev.data.projectIds || []).includes(project.id))
+  .sort(
+    (a, b) =>
+      parseDateSafe(getEffectiveEventDate(b) || 0).getTime() -
+      parseDateSafe(getEffectiveEventDate(a) || 0).getTime()
+  );
+
+const linkedDatasets = (project.data.datasetIds || [])
+  .map((id) => allDatasets.find((d) => d.id === id))
+  .filter((d): d is CollectionEntry<'datasets'> => Boolean(d));
+
+const relatedProtocols = allProtocols
+  .filter((proto) =>
+    (proto.data.linkedProjectIds || []).some(
+      (pRef) => (typeof pRef === 'string' ? pRef : pRef.id) === project.id
+    )
+  )
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+
+const pImg = project.data.image
+  ? project.data.image.startsWith('/')
+    ? project.data.image
+    : `/${project.data.image}`
+  : null;
+const statusLabel = getProjectStatusLabel(project.data.status, project.data.scope);
+---
+
+<Layout
+  title={isIdea ? `${project.data.title} – Ideenschmiede` : project.data.title}
+  activeNav="projekte"
+>
+  <div class="container project-detail-page">
+    <Breadcrumb
+      href={isIdea ? '/projekte#ideen' : isExternal ? '/projekte#verwandte' : '/projekte'}
+      label={
+        isIdea
+          ? 'Zurück zur Ideenschmiede'
+          : isExternal
+            ? 'Zurück zu allen empfohlenen Projekten'
+            : 'Zurück zu allen Projekten'
+      }
+    />
+
+    <DetailHeader
+      title={project.data.title}
+      subtitle={project.data.teaser}
+      image={pImg}
+      imageAlt={project.data.imageAlt || project.data.title}
+    >
+      {project.data.projectUrl && project.data.projectUrl !== '#' && (
+        <Button href={project.data.projectUrl} variant="primary" external>
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span>Projekt besuchen</span>
+          <span class="link-arrow">🡵</span>
+        </Button>
+      )}
+      {project.data.repoUrl && project.data.repoUrl !== '#' && (
+        <Button href={project.data.repoUrl} variant="outline" external>
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+          </svg>
+          <span>GitHub Repository</span>
+          <span class="link-arrow">🡵</span>
+        </Button>
+      )}
+    </DetailHeader>
+
+    <div class="layout-grid">
+      <div class="content-col">
+        <div class="text-content">
+          <div class="description-box markdown-body">
+            <Content />
+          </div>
+        </div>
+
+        {linkedDatasets.length > 0 && (
+          <div class="linked-datasets-block">
+            <h2 class="section-title">Verknüpfte Datensätze</h2>
+            <div class="linked-datasets-grid">
+              {linkedDatasets.map((ds) => (
+                <DatasetCard dataset={ds} organizations={allOrganizations} slim={true} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {relatedEvents.length > 0 && (
+          <div class="linked-events-block">
+            <h2 class="section-title">Verknüpfte Termine</h2>
+            <div class="linked-datasets-grid">
+              {relatedEvents.map((ev) => (
+                <EventCard event={ev} slim={true} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        <BlogTimeline entityType="project" entityId={project.id} heading="Erwähnt im Blog" />
+      </div>
+
+      <ProjectDetailSidebar
+        project={project}
+        statusLabel={statusLabel}
+        resolvedOrganizations={resolvedOrganizations}
+        resolvedPersons={resolvedPersons}
+        relatedProtocols={relatedProtocols}
+      />
+    </div>
+
+    <RelatedProjects project={project} allProjects={allProjects} />
+
+    <EntityPrintSheets
+      typeLabel={isIdea ? 'Ideenschmiede · Projekt-Steckbrief' : 'Projekt-Steckbrief'}
+      title={project.data.title}
+      teaser={project.data.teaser}
+      description={stripMarkdown(project.body) || project.data.teaser}
+      image={pImg}
+      topMeta={[
+        { label: 'Kategorie', value: project.data.category },
+        { label: 'Status', value: statusLabel },
+        { label: 'Themen', value: (project.data.tags || []).join(', ') },
+        { label: 'Mitwirkende', value: resolvedPersons.map((p) => p.data.name).join(', ') },
+        { label: 'Partner', value: resolvedOrganizations.map((o) => o.data.name).join(', ') },
+      ]}
+      bottomMeta={[
+        { label: 'Projekt-Link', value: project.data.projectUrl || '', mono: true },
+        { label: 'Quellcode', value: project.data.repoUrl || '', mono: true },
+        {
+          label: 'Webseite',
+          value: `https://ok-lab-karlsruhe.de/projekte/${project.id}`,
+          mono: true,
+        },
+      ]}
+      canonicalUrl={`https://ok-lab-karlsruhe.de/projekte/${project.id}`}
+      displayUrl={
+        project.data.projectUrl
+          ? project.data.projectUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
+          : `ok-lab-karlsruhe.de/projekte/${project.id}`
+      }
+      badges={[
+        ...resolvedOrganizations.map((o) => o.data.name),
+        ...(project.data.tags || []).slice(0, 3),
+      ]}
+      accentColor="#e8f1f8"
+    />
+  </div>
+</Layout>
+
+<style>
+  @media print {
+    .project-detail-page {
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .project-detail-page > :global(*:not(.entity-print-sheets)) {
+      display: none !important;
+    }
+  }
+</style>

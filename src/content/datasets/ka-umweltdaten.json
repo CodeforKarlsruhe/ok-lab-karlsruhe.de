@@ -1,0 +1,14 @@
+{
+  "title": "Umweltdaten",
+  "teaser": "Vielfältige Umweltdaten von LUBW, Stadt und Sensor-Community zur Analyse von Luft- und Wasserqualität.",
+  "description": "Es gibt eine Vielzahl von Umweltdaten, die von verschiedenen Stellen bereitgestellt werden. Die LUBW (Landesanstalt für Umwelt Baden-Württemberg) stellt beispielsweise Daten zu Luftqualität, Wasserqualität und anderen Umweltparametern bereit. Die Stadt Karlsruhe hat ebenfalls Umweltdaten, beispielsweise zu Luftqualität an verschiedenen Messstellen in der Stadt. Es gibt auch Community-basierte Projekte wie Sensor Community oder CycleSense, die Umweltdaten sammeln und bereitstellen. Diese Daten können genutzt werden, um Umweltbedingungen zu analysieren, Veränderungen im Zeitverlauf zu beobachten oder auch um die Auswirkungen von Maßnahmen zu bewerten.",
+  "publisherIds": ["lubw", "stadt-karlsruhe-umwelt", "sensor-community", "cyclesense-initiative"],
+  "url": "https://my.hidrive.com/share/10.0hxq4we#$/UmweltDaten",
+  "tags": ["Umwelt", "Open Data", "Klima", "Gesellschaft"],
+  "formats": ["pdf", "xlsx"],
+  "portalId": "landesamt-fuer-umwelt-lubw",
+  "size": "Unterschiedlich, teils sehr groß",
+  "personIds": ["lisa-hahn-woernle", "stefan-jergentz", "andreas-kugel"],
+  "useCases": "Analysen, Monitoring, Bewertung von Umweltdaten",
+  "image": "/assets/images/datasets/ka-umweltdaten/image.webp"
+}

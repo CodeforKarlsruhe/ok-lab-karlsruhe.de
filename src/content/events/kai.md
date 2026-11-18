@@ -1,0 +1,148 @@
+---
+title: CoDaKaI - Coding, Daten und Ka-I
+series: kai
+teaser: Workshopreihe zu Coding, Daten und Künstlicher Intelligenz.
+category: Workshop
+tags:
+  - KI
+  - Coding
+  - Daten
+status: active
+isRegularMeeting: false
+dates: []
+location: ImpactHub Karlsruhe
+image: /assets/images/events/kai/image.webp
+featured: false
+pinned: false
+registrationOpen: false
+personIds:
+  - andreas-kugel
+organizationIds:
+  - ok-lab-karlsruhe
+projectIds: []
+datasetIds: []
+externalLinks: []
+galleryImages: []
+facts: []
+schedule: []
+---
+
+Was hat es mit Coding, Daten und KI auf sich?
+
+Wir nutzen **Ka-I** (Karlsruher Intelligenz) um Licht ins digitale Dunkel zu bringen.
+
+In einer lockeren Workshopreihe könnt Ihr Euch mit den wichtigsten Grundlagen und Werkzeugen vertraut machen.
+
+### Das nächste Thema
+
+#### 16.3.2024: Fortsetzung OpenData HackDays
+
+Samstag, 13:00-17:00 Uhr im ImpactHub Karlsruhe, [Kaiserstr. 97](https://www.openstreetmap.org/way/304550742)
+
+Am 1./2.3.24 waren die OpenData HackDays. Die Teams und neu Interessierte planen, wie es weiter geht. Coden erlaubt. Wer nicht dabei war: Infos zu den HackDays [hier](/projekte/odd24)
+
+Bitte hier [anmelden](https://pretix.eu/digital-codes/codakai-20240316/)
+
+**Achtung Datenschutz**: Anmeldung und ggf. Bezahlung erfolgt über externe Anbieter (Pretix und Stripe) mit ihren eigenen DSGVO Bedingungen. Wir speichern von Euch Namen und EMail solange es erforderlich und zulässig ist, üblicherweise bis zum Ende der Workshopreihe. Bei Fragen wende Dich bitte an [uns](mailto:info@ok-lab-karlsruhe.de). Durch Anklicken des jeweiligen _Ticket_-Links stimmst Du diesen Bedingungen zu.
+
+### Am Projekt Mitmachen
+
+Wir freuen uns, wenn Du schon etwas Erfahrung in diesen Themen hast und bei der Vorbereitung und/oder Workshopanleitung helfen möchtest. Außer Ruhm und Ehre können wir leider nichts anbieten.
+
+[Schreib uns](mailto:info@ok-lab-karlsruhe.de)
+
+### Zu KI
+
+Traditionelles Programmieren (siehe oben) gibt die Anweisungen vor, die Maschinen (Computer) ausführen, um Ergebnisse zu berechnen.
+Die Idee von KI ist, Programme zu schreiben, die dem menschlichen Denken nachempfunden sind: neuronale Netze.
+
+Diese Netze (Modelle) müssen wir mit Daten und Bewertungen trainieren. Nach einiger Zeit können sie dann selbst _richtig_ und _falsch_ unterscheiden.
+
+Jedenfalls auf Grundlage der Daten, die sie bekommen haben und mit gewissen Fehlern. Die machen wir selbst ja auch immer wieder.
+
+Gut trainierte Modelle können inzwischen in vielen Bereichen sehr gute Ergebnisse liefern - und wir können das aus dem Programmcode und den Trainingsdaten nicht wirklich nachvollziehen. Vermutlich kommt daher unsere Neigung, diesen Systemen **Intelligenz** zuzuschreiben: _Funktioniert gut, aber wir wissen nicht wie. Also muss es intelligent sein!_ Sonst wären wir selbst ja dumm.
+
+Wir nutzen Modelle (**KI**), sofern verfügbar und sinnvoll. Daher gibt es auch Workshops _ohne KI_.
+
+### Vergangene Themen
+
+#### 25.11.2023: KI im Umweltschutz
+
+Samstag, 13:00-17:00 Uhr im ImpactHub Karlsruhe, [Kaiserstr. 97](https://www.openstreetmap.org/way/304550742)
+
+Wir freuen uns, dass wir am 25.11. 2023 einen Workshop gemeinsam mit der [_KI-Ideenwerkstatt_](https://www.ki-ideenwerkstatt.de/veranstaltungen/von-ki-neuronalen-netzen-und-klassifikationen-von-insekten/) durchführen können zum Thema **KI und Umweltschutz**. Mehr Infos zu diesem Programm des _BMUV_ findet Ihr [hier](https://www.bmuv.de/download/fuenf-punkte-programm-kuenstliche-intelligenz-fuer-umwelt-und-klima).
+
+> Du interessierst dich für Künstliche Intelligenz (KI) und Umweltschutz? Du möchtest verstehen, wie neuronale Netze funktionieren und wie sie beispielsweise zum Klassifizieren von Tieren und Pflanzen eingesetzt werden können? Dann komm zu unserem KI-Einführungsworkshop vom OK Lab Karlsruhe in Zusammenarbeit mit der KI-Ideenwerkstatt. Im Impact Hub Karlsruhe führen wir euch in die Grundlagen der KI ein.\
+> KI wird im engeren Sinne definiert als „Lernende Systeme“. Warum „lernend“? Ein KI-System „lernt“ den Weg zur Lösung ähnlich wie ein Mensch auf Basis von Beobachtungen – den Daten – in vielen aufeinander aufbauenden „Trainingsläufen“.&nbsp;Dafür braucht es große Datenmengen und Rechenkapazität.\
+> Im Workshop bauen wir gemeinsam ein einfaches KI-System mit allen Teilschritten – Datenerhebung und Vorbereitung, Modellbildung, Training und Überprüfung – so wie es für eine echte Anwendung, wie z.B. dem Erkennen von Insekten, notwendig wäre.
+
+Wir haben vor, nach dieser Einführungsveranstaltungen das Thema mit Euch zusammen weiter zu vertiefen, z.B. um mit einer kleinen Kamera auf dem Balkon invasive Insektenarten zu erkennen.
+
+<!--
+
+Hier ist die vorläufige Agenda:
+
+{% table %}
+- Zeit
+- Titel
+---
+- 13:00
+- Begrüßung
+---
+- 13:10
+- Vorstellung
+---
+- 13:30
+- Intro KI+Umweltschutz
+---
+- 14:15
+- Brainstorming
+---
+- 14:45
+- Plenum
+---
+- 15:00
+- Pause
+---
+- 15:15
+- Tools
+---
+- 15:45
+- Hands-On
+---
+- 16:45
+- Wrap-Up
+---
+- 17:00
+- Ende
+{% /table %}
+
+-->
+
+#### 28.10.2023: Coding und Sensoren
+
+Samstag, 13:00-17:00 Uhr im ImpactHub Karlsruhe, [Kaiserstr. 97](https://www.openstreetmap.org/way/304550742)
+
+**Einführung zu Coding und Sensoren** - Was ist das, wie geht und was braucht man dazu?
+Wer noch nie programmiert hat, findet einen einfachen Einstieg mit einer graphischen Programmierumgebung und kann z.B.
+LEDs blinken lasse, Sensoren schütteln oder CO2 Daten in eine IoT Cloud schicken.
+Mit ein paar Vorkenntnisen könnt Ihr mit Python _(nicht so schwer)_ verschiedene Grundlagen nachvollziehen, z.B. wie man Bilder per Programm erzeugt.
+
+Nebenbei gibt es noch ein paar Infos zu Technik und Daten und was man so mit Sensoren machen kann. Dazu werden wir auf
+einige Inhalte aus unseren (Umweltsensoren-Workshops)[https://github.com/digital-codes/critical-workshops/wiki/tvocDe] zurückgreifen.
+
+Wir führen die Workshops im [ImpactHub Karlsruhe](https://karlsruhe.impacthub.net) durch. Wir haben Laptops für 2-er Gruppen vorätig. Du kannst auch gerne einen eigenen PC (Notebook, Laptop) mit WLAN und einigermaßen aktuellem Browser mitbringen. Wir stellen die restliche Ausrüstung zur Verfügung.
+
+#### 23.8.2023: Coding und Sensoren
+
+Samstag, 13:00-17:00 Uhr im ImpactHub Karlsruhe, [Kaiserstr. 97](https://www.openstreetmap.org/way/304550742)
+
+Wir starten mit einer **Einführung zu Coding und Sensoren** - Was ist das, wie geht und was braucht man dazu?
+Wer noch nie programmiert hat, findet einen einfachen Einstieg mit einer graphischen Programmierumgebung und kann z.B.
+LEDs blinken lasse, Sensoren schütteln oder CO2 Daten in eine IoT Cloud schicken.
+Mit ein paar Vorkenntnisen könnt Ihr mit Python _(nicht so schwer)_ verschiedene Grundlagen nachvollziehen, z.B. wie man Bilder per Programm erzeugt.
+
+Nebenbei gibt es noch ein paar Infos zu Technik und Daten und was man so mit Sensoren machen kann. Dazu werden wir auf
+einige Inhalte aus unseren (Umweltsensoren-Workshops)[https://github.com/digital-codes/critical-workshops/wiki/tvocDe] zurückgreifen.
+
+Wir führen die Workshops im [ImpactHub Karlsruhe](https://karlsruhe.impacthub.net) durch. Wir haben Laptops für 2-er Gruppen vorätig. Du kannst auch gerne einen eigenen PC (Notebook, Laptop) mit WLAN und einigermaßen aktuellem Browser mitbringen. Wir stellen die restliche Ausrüstung zur Verfügung.

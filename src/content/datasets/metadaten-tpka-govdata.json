@@ -1,0 +1,14 @@
+{
+  "title": "Metadaten zum Transparenzportal KA + GovData",
+  "teaser": "Aggregierte Metadaten des Karlsruher Transparenzportals und GovData zur demografischen Analyse.",
+  "description": "Das Transparenzportal (transparenz.karlsruhe.de) ist die zentrale Anlaufstelle für offene Daten und Dokumente der Stadt Karlsruhe. Wir haben alle verfügbaren Metadaten und Datensätze heruntergeladen. Wir haben außerdem ein paar Aufgabenstellungen formuliert, man könnte beispielsweise die Altersstruktur (in versch. Stadtteilen) analysieren, das Verhältnis von Männern und Frauen vergleichen, die Alterspyramide untersuchen, schrumpfende und wachsende Ortsteile identifizieren oder familienfreundliche Gebiete finden. Auch Bevölkerungsbewegungen und Migration könnten analysiert werden. Wie ist das Verhältnis zwischen Ausländern, Menschen mit Migrationshintergrund und Bundesbürgern, erkennt man Unterschiede oder Trends in den Daten? Im Ordner 'tasks' findest du die für diese Fragen relevanten Datensätze. Govdata.de ist ein ähnlicher Datenkatalog auf Bundesebene, der von verschiedenen Behörden und Institutionen gefüllt wird. Es gibt dort ca. 500.000 Datensätze, die sich mit verschiedensten Themen beschäftigen. Es könnte spannend sein, hier nach interessanten Datensätzen zu suchen, die sich mit Karlsruhe beschäftigen, oder auch bundesweite Daten aushzuwerten, um daraus Erkenntnisse für Karlsruhe zu gewinnen. Aufgrund der großen Anzahl an Datensätzen haben wir hier nur die Metadaten abgerufen. Die einzelnen Ressourcen können bei Bedarf manuell von der Originalquelle bezogen werden.",
+  "publisherIds": ["stadt-karlsruhe"],
+  "url": "https://my.hidrive.com/share/10.0hxq4we#$/DatenPortale",
+  "tags": ["Open Data", "Verwaltung", "Demografie", "Migration"],
+  "formats": ["sonstige"],
+  "portalId": "govdata-das-datenportal-fuer-deutschland",
+  "size": "KA: 768 Datensätze, Govdata: ca. 500.000 Datensätze",
+  "personIds": ["wolfgang-radke", "michael-riedmueller"],
+  "useCases": "Analysen rund um Karlsruhe",
+  "image": "/assets/images/datasets/metadaten-tpka-govdata/image.webp"
+}

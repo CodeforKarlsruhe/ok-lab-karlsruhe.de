@@ -1,0 +1,12 @@
+{
+  "title": "Geoportal Karlsruhe",
+  "region": "karlsruhe",
+  "url": "https://www.karlsruhe.de/mobilitaet-stadtbild/bauen-und-immobilien/geoportal-karlsruhe",
+  "description": "Karten und Geodaten der Stadt Karlsruhe.",
+  "subItems": [
+    {
+      "title": "Hochwassergefahrenkarte ",
+      "url": "https://geoportal.karlsruhe.de/fachplaene/?page=Hochwassergefahrenkarte"
+    }
+  ]
+}

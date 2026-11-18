@@ -1,0 +1,14 @@
+{
+  "title": "InXR: Code Reality",
+  "teaser": "3D-Modelle und XR-Medien für Augmented-Reality-Anwendungen im öffentlichen Raum.",
+  "description": "XR-3D-Modelle, Videos und Bilder für eine neue XR-Plattform für den öffentlichen Raum. Eure Challenge: Eine skalierbare WebXR-Plattform programmieren, vorzugsweise mit AR.js. Die Inhalte sollen über QR/XR Code Cubes erreichbar sein und positionsgenau eingebunden und dynamisch dargestellt werden. Dazu passend Eine intuitive und informative Benutzeroberfläche gestalten – responsive, performant, nutzerzentriert. Passwort: odd2025",
+  "publisherIds": ["studio-blaupause"],
+  "url": "https://my.hidrive.com/share/7tham.o1ma#$/blaupause",
+  "tags": ["eXtended Reality", "Augmented Reality", "Digitale Kunst"],
+  "formats": ["glb", "sonstige"],
+  "portalId": null,
+  "size": "10 Kunstwerke",
+  "personIds": ["marvin-bauch", "julia-federspiel"],
+  "useCases": "Digitale Kunstausstellung in Karlsruhe",
+  "image": "/assets/images/datasets/inxr-reality/image.webp"
+}

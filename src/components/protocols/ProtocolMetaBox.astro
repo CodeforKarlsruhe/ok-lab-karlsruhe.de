@@ -1,0 +1,158 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface NamedEntity {
+  id: string;
+  name: string;
+}
+
+interface Props {
+  formattedDate: string;
+  typeLabel: string;
+  facilitator?: NamedEntity | null;
+  scribe?: NamedEntity | null;
+  attendeesList: NamedEntity[];
+  linkedEvent?: CollectionEntry<'events'> | null;
+  linkedProjects: { id: string; title: string }[];
+}
+
+const {
+  formattedDate,
+  typeLabel,
+  facilitator,
+  scribe,
+  attendeesList,
+  linkedEvent,
+  linkedProjects,
+} = Astro.props;
+---
+
+<dl>
+  <div>
+    <dt>Datum:</dt>
+    <dd>{formattedDate}</dd>
+  </div>
+  <div>
+    <dt>Art des Treffens:</dt>
+    <dd>{typeLabel}</dd>
+  </div>
+  {facilitator && (
+    <div>
+      <dt>Moderation:</dt>
+      <dd>
+        <a href={`/suche?person=${facilitator.id}`} class="link-inline">
+          {facilitator.name}
+        </a>
+      </dd>
+    </div>
+  )}
+  {scribe && (
+    <div>
+      <dt>Protokoll:</dt>
+      <dd>
+        <a href={`/suche?person=${scribe.id}`} class="link-inline">
+          {scribe.name}
+        </a>
+      </dd>
+    </div>
+  )}
+  {attendeesList.length > 0 && (
+    <div class="full">
+      <dt>Anwesende:</dt>
+      <dd>
+        {attendeesList.map((a, idx) => (
+          <>
+            <a href={`/suche?person=${a.id}`} class="link-inline">
+              {a.name}
+            </a>
+            {idx < attendeesList.length - 1 && ', '}
+          </>
+        ))}
+      </dd>
+    </div>
+  )}
+  {linkedEvent && (
+    <div class="full">
+      <dt>Zugehöriges Event:</dt>
+      <dd>
+        <a href={`/events/${linkedEvent.id}`} class="link-inline">
+          {linkedEvent.data.title}
+        </a>
+      </dd>
+    </div>
+  )}
+  {linkedProjects.length > 0 && (
+    <div class="full">
+      <dt>Verknüpfte Projekte:</dt>
+      <dd>
+        {linkedProjects.map((p, idx) => (
+          <span>
+            <a href={`/projekte/${p.id}`} class="link-inline">
+              {p.title}
+            </a>
+            {idx < linkedProjects.length - 1 ? ', ' : ''}
+          </span>
+        ))}
+      </dd>
+    </div>
+  )}
+</dl>
+
+<style>
+  dl {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 2rem;
+    background: var(--color-surface-sunken);
+    padding: 1.25rem 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    margin: 0 0 2.5rem 0;
+    font-size: 0.9rem;
+  }
+
+  div {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  div.full {
+    grid-column: 1 / -1;
+  }
+
+  dt {
+    font-weight: 600;
+    color: var(--color-text-muted);
+    min-width: 120px;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media print {
+    dl {
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      margin: 0 0 1.2rem 0 !important;
+      font-size: 10pt;
+      gap: 0.2rem 1.5rem;
+    }
+
+    dt {
+      color: #4b5563 !important;
+      min-width: 110px;
+    }
+
+    dd,
+    dd :global(a.link-inline) {
+      color: #1a1a1a !important;
+      text-decoration: none !important;
+      font-weight: 400 !important;
+    }
+  }
+</style>

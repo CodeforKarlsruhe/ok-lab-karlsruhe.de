@@ -1,0 +1,14 @@
+{
+  "title": "Berlin zählt Mobilität! Und Karlsruhe auch.",
+  "teaser": "Verkehrszählungen von dezentralen IoT-Sensoren in Karlsruhe im Rahmen des Telraam-Netzwerks.",
+  "description": "Wir haben verschiedene Sensoren in Karlsruhe aufgestellt, die Verkehrsteilnehmer zählen. Die Raspberry Pi-basierten Sensoren sind Teil des Netzwerks von Telraam und eine Leihgabe des Projekts 'Berlin Zählt Mobilität' / ADFC Berlin. Im Rahmen des Hackathons könnten wir diese Daten auswerten und visualisieren. Passwort: odd2025",
+  "publisherIds": ["adfc-berlin", "telraam", "ok-lab-karlsruhe"],
+  "url": "https://my.hidrive.com/#$/oklab-shared/telraam",
+  "tags": ["Mobilität", "IoT"],
+  "formats": ["csv"],
+  "portalId": "mit-forschen",
+  "size": "Echtzeitdaten",
+  "personIds": ["max-liesegang"],
+  "useCases": "Verkehrsflussanalysen, Umweltschutz, Stadtplanung, Verkehrsplanung",
+  "image": "/assets/images/datasets/telraam-verkehr/image.webp"
+}

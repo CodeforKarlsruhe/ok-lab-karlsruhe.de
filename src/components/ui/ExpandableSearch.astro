@@ -1,0 +1,228 @@
+---
+interface Props {
+  id: string; // e.g. "event-search", "projekte-search", "daten-search"
+  placeholder?: string;
+  ariaLabel?: string;
+  class?: string;
+}
+
+const {
+  id,
+  placeholder = 'Durchsuchen...',
+  ariaLabel = 'Durchsuchen',
+  class: className = '',
+} = Astro.props;
+
+const toggleId = `${id}-toggle`;
+const closeId = `${id}-close`;
+const wrapId = `${id}-wrapper`;
+---
+
+<div class={`expandable-search ${className}`} id={wrapId}>
+  <button
+    type="button"
+    class="search-icon-btn"
+    id={toggleId}
+    aria-label={`${ariaLabel} einblenden`}
+    title={`${ariaLabel} einblenden`}
+  >
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+  </button>
+
+  <div class="search-expanded-field">
+    <svg
+      class="search-field-icon"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <input
+      type="search"
+      id={id}
+      class="expandable-search-input"
+      placeholder={placeholder}
+      aria-label={ariaLabel}
+      autocomplete="off"
+    />
+    <button
+      type="button"
+      class="search-close-btn"
+      id={closeId}
+      aria-label="Suche schließen"
+      title="Schließen"
+    >
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<style>
+  .expandable-search {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .search-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    padding: 0;
+  }
+
+  .search-icon-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background-color: var(--color-primary-light);
+  }
+
+  .search-expanded-field {
+    display: none;
+    align-items: center;
+    gap: var(--space-2);
+    position: relative;
+  }
+
+  .expandable-search.open .search-icon-btn {
+    display: none;
+  }
+
+  .expandable-search.open .search-expanded-field {
+    display: inline-flex;
+  }
+
+  .search-field-icon {
+    position: absolute;
+    left: var(--space-2-5);
+    color: var(--color-text-muted);
+    pointer-events: none;
+  }
+
+  .expandable-search-input {
+    width: 240px;
+    height: 32px;
+    padding: 0.35rem var(--space-7) 0.35rem 2rem;
+    font-family: inherit;
+    font-size: var(--text-xs);
+    color: var(--color-text);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface);
+    outline: none;
+    box-shadow: var(--shadow-focus);
+    transition: width var(--transition-base);
+  }
+
+  .expandable-search-input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .search-close-btn {
+    position: absolute;
+    right: var(--space-2);
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-full);
+    background-color: var(--color-surface-sunken);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 0;
+    transition: all var(--transition-fast);
+  }
+
+  .search-close-btn:hover {
+    background-color: var(--color-primary);
+    color: #ffffff;
+  }
+
+  @media (max-width: 600px) {
+    .expandable-search-input {
+      width: 180px;
+    }
+  }
+</style>
+
+<script>
+  function setupExpandableSearches() {
+    document.querySelectorAll('.expandable-search').forEach((wrap) => {
+      if ((wrap as any).__initialized) return;
+      (wrap as any).__initialized = true;
+
+      const toggle = wrap.querySelector('.search-icon-btn');
+      const close = wrap.querySelector('.search-close-btn');
+      const input = wrap.querySelector('.expandable-search-input') as HTMLInputElement | null;
+
+      if (!toggle || !close || !input) return;
+
+      toggle.addEventListener('click', () => {
+        wrap.classList.add('open');
+        input.focus();
+      });
+
+      close.addEventListener('click', () => {
+        input.value = '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        wrap.classList.remove('open');
+        (toggle as HTMLElement).focus();
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          input.value = '';
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          wrap.classList.remove('open');
+          (toggle as HTMLElement).focus();
+        }
+      });
+    });
+  }
+
+  setupExpandableSearches();
+  document.addEventListener('astro:page-load', setupExpandableSearches);
+</script>

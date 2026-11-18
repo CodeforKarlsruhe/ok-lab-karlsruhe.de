@@ -1,0 +1,16 @@
+{
+  "title": "Transparenzportal der Stadt Karlsruhe",
+  "region": "karlsruhe",
+  "url": "https://transparenz.karlsruhe.de/",
+  "description": "Das zentrale Portal für offene Daten der Stadtverwaltung.",
+  "subItems": [
+    {
+      "title": "Liste verwandter Anwendungen und Portale (\"Showcase\")",
+      "url": "https://transparenz.karlsruhe.de/showcase"
+    },
+    {
+      "title": "Kennzahlen Dashboard Energie- und Treibhausgasbilanz",
+      "url": "https://web1.karlsruhe.de/transparenz/index.html"
+    }
+  ]
+}

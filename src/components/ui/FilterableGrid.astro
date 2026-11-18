@@ -1,0 +1,91 @@
+---
+import FilterBar, { type FilterPill, type FilterGroup } from './FilterBar.astro';
+import EmptyState from './EmptyState.astro';
+
+interface Props {
+  mode?: 'flat' | 'grouped' | 'search';
+  searchId?: string;
+  searchPlaceholder?: string;
+  searchAriaLabel?: string;
+  searchValue?: string;
+  pills?: FilterPill[];
+  pillsId?: string;
+  pillsDataAttr?: string;
+  groups?: FilterGroup[];
+  gridId?: string;
+  gridClass?: string;
+  hasCustomGrid?: boolean;
+  emptyId?: string;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  emptyResetId?: string;
+  emptyResetLabel?: string;
+  showEmptyReset?: boolean;
+  class?: string;
+}
+
+const {
+  mode = 'flat',
+  searchId = 'search-input',
+  searchPlaceholder,
+  searchAriaLabel,
+  searchValue,
+  pills,
+  pillsId,
+  pillsDataAttr,
+  groups,
+  gridId = 'results-grid',
+  gridClass = 'cards-grid',
+  hasCustomGrid = false,
+  emptyId = 'no-results',
+  emptyTitle,
+  emptyDescription,
+  emptyResetId,
+  emptyResetLabel,
+  showEmptyReset = true,
+  class: className = '',
+} = Astro.props;
+---
+
+<div class:list={['filterable-grid-component', `mode-${mode}`, className]}>
+  <FilterBar
+    mode={mode}
+    searchId={searchId}
+    searchPlaceholder={searchPlaceholder}
+    searchAriaLabel={searchAriaLabel}
+    searchValue={searchValue}
+    pills={pills}
+    pillsId={pillsId}
+    pillsDataAttr={pillsDataAttr}
+    groups={groups}
+  >
+    <slot name="right" slot="right" />
+    <slot name="status" slot="status" />
+  </FilterBar>
+
+  {hasCustomGrid ? (
+    <slot />
+  ) : (
+    <div id={gridId} class:list={[gridClass]}>
+      <slot />
+    </div>
+  )}
+
+  <EmptyState
+    id={emptyId}
+    title={emptyTitle}
+    description={emptyDescription}
+    resetId={emptyResetId}
+    resetLabel={emptyResetLabel}
+    showReset={showEmptyReset}
+  >
+    <slot name="empty-icon" slot="icon" />
+  </EmptyState>
+</div>
+
+<style>
+  .filterable-grid-component {
+    width: 100%;
+    position: relative;
+  }
+</style>

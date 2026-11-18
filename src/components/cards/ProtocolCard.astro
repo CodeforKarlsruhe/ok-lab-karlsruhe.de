@@ -1,0 +1,109 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import EntityCard, { type TagItem } from './EntityCard.astro';
+import { parseDateSafe } from '../../utils/events';
+
+const TYPE_LABELS: Record<string, string> = {
+  plenum: 'Plenum',
+  vorstand: 'Vorstandssitzung',
+  arbeitsgruppe: 'Arbeitsgruppe',
+  mitgliederversammlung: 'Mitgliederversammlung',
+};
+
+interface Props {
+  protocol?: CollectionEntry<'protocols'> | Record<string, any>;
+  projects?: CollectionEntry<'projects'>[];
+  slug?: string;
+  title?: string;
+  date?: Date | string;
+  type?: string;
+  typeLabel?: string;
+  attendeesCount?: number;
+  decisionsCount?: number;
+  linkedProjects?: TagItem[];
+  searchCorpus?: string;
+  slim?: boolean;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  protocol,
+  projects: propProjects,
+  slug: propSlug,
+  title: propTitle,
+  date: propDate,
+  type: propType,
+  typeLabel: propTypeLabel,
+  attendeesCount: propAttendeesCount,
+  decisionsCount: propDecisionsCount,
+  linkedProjects: propLinkedProjects,
+  searchCorpus: propSearchCorpus,
+  slim = false,
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+const raw = protocol
+  ? 'data' in protocol && protocol.data
+    ? { id: protocol.id, ...protocol.data }
+    : protocol
+  : {};
+
+const slug = propSlug ?? raw.id ?? raw.slug ?? '';
+const title = propTitle ?? raw.title ?? '';
+const date = propDate ?? raw.date ?? '';
+const type = propType ?? raw.type ?? 'plenum';
+const typeLabel = propTypeLabel ?? TYPE_LABELS[type] ?? type;
+const attendeesCount = propAttendeesCount ?? (raw.attendeeIds?.length || 0);
+const decisionsCount = propDecisionsCount ?? (raw.decisions?.length || 0);
+
+let linkedProjects: TagItem[] = propLinkedProjects ?? [];
+if (!propLinkedProjects && Array.isArray(raw.linkedProjectIds) && raw.linkedProjectIds.length > 0) {
+  const allProjects = propProjects ?? (await getCollection('projects'));
+  linkedProjects = raw.linkedProjectIds.map((pRef: any) => {
+    const id = typeof pRef === 'string' ? pRef : pRef.id || pRef.slug;
+    const match = allProjects.find((p) => p.id === id);
+    return match ? { label: match.data.title, href: `/projekte/${match.id}` } : { label: id };
+  });
+}
+
+const dateObj = parseDateSafe(date);
+const dayNum = dateObj.getDate();
+const monthShort = dateObj.toLocaleDateString('de-DE', { month: 'short' });
+const yearNum = dateObj.getFullYear();
+const formattedDate = dateObj.toLocaleDateString('de-DE', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+});
+
+const statsParts: string[] = [];
+if (attendeesCount > 0) {
+  statsParts.push(`${attendeesCount} Teilnehmende`);
+}
+if (decisionsCount > 0) {
+  statsParts.push(`${decisionsCount} ${decisionsCount === 1 ? 'Beschluss' : 'Beschlüsse'}`);
+}
+const description = statsParts.join(' · ');
+
+const searchCorpus =
+  propSearchCorpus ??
+  `${title} ${formattedDate} ${(raw.attendeeIds || []).join(' ')} ${(raw.decisions || []).map((d: any) => d.title).join(' ')}`;
+---
+
+<EntityCard
+  mode="simple"
+  slim={slim}
+  title={title}
+  url={`/protokolle/${slug}`}
+  date={{ day: dayNum, month: monthShort, year: yearNum }}
+  category={typeLabel}
+  description={description}
+  tags={linkedProjects}
+  actionText="Protokoll lesen"
+  class={`protocol-card ${className}`}
+  data-type={type}
+  data-search={searchCorpus}
+  {...rest}
+/>

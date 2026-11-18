@@ -1,0 +1,341 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import SideCard from '../cards/SideCard.astro';
+import Button from '../ui/Button.astro';
+import LightboxImage from '../ui/LightboxImage.astro';
+import TagPill from '../ui/TagPill.astro';
+import { FEDIVERSE_DEFAULT_URL, FEDIVERSE_PROFILE_URL } from '../../utils/blog';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  author?: CollectionEntry<'persons'>;
+  linkedProjects: CollectionEntry<'projects'>[];
+  linkedEvents: CollectionEntry<'events'>[];
+  linkedDatasets?: CollectionEntry<'datasets'>[];
+  formattedDate: string;
+  discussionUrl: string;
+  mode?: 'feed' | 'detail';
+  showDiscussionCta?: boolean;
+}
+
+const {
+  post,
+  author,
+  linkedProjects,
+  linkedEvents,
+  linkedDatasets = [],
+  formattedDate,
+  discussionUrl,
+  mode = 'feed',
+  showDiscussionCta = false,
+} = Astro.props;
+
+const { Content } = await render(post);
+const hasTitle = Boolean(post.data.title && post.data.title.trim().length > 0);
+const authorImg = author?.data.image
+  ? '/' + author.data.image.replace(/^\//, '')
+  : '/assets/images/okl.svg';
+const showEntityPills = mode === 'feed';
+const hasRelations =
+  (showEntityPills &&
+    (linkedProjects.length > 0 || linkedEvents.length > 0 || linkedDatasets.length > 0)) ||
+  (post.data.tags || []).length > 0;
+---
+
+<SideCard class:list={['blog-card', `mode-${mode}`]}>
+  <header>
+    <div class="meta-author-date">
+      {author ? (
+        <a
+          href={`/suche?person=${author.id}`}
+          class="author-link"
+          title={`Alle Aktivitäten von ${author.data.name} anzeigen`}
+        >
+          <img
+            src={authorImg}
+            alt={author.data.name}
+            class="author-avatar"
+            width="26"
+            height="26"
+            loading="lazy"
+          />
+          <span class="author-name">{author.data.name}</span>
+        </a>
+      ) : (
+        <span class="author-fallback">OK Lab Karlsruhe</span>
+      )}
+      <span class="meta-sep" aria-hidden="true">
+        ·
+      </span>
+      <a href={`/blog/${post.id}`} class="post-date-link" title="Beitrag öffnen">
+        <time datetime={String(post.data.date)}>{formattedDate}</time>
+      </a>
+    </div>
+
+    {mode === 'feed' && (
+      <a
+        href={discussionUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="link-action meta-fediverse-link"
+      >
+        <span>Im Fediverse diskutieren</span>
+        <span class="link-arrow" aria-hidden="true">
+          🡵
+        </span>
+      </a>
+    )}
+  </header>
+
+  {hasTitle &&
+    (mode === 'feed' ? (
+      <h2 class="card-title post-title">
+        <a href={`/blog/${post.id}`}>{post.data.title}</a>
+      </h2>
+    ) : (
+      <h1 class="card-title post-title detail-title">{post.data.title}</h1>
+    ))}
+
+  {post.data.image && (
+    <div class="post-media">
+      <LightboxImage
+        src={'/' + post.data.image.replace(/^\//, '')}
+        alt={post.data.imageAlt || post.data.title || `Bild vom ${formattedDate}`}
+        metadata={
+          post.data.imageAlt && post.data.imageAlt !== post.data.title
+            ? post.data.imageAlt
+            : undefined
+        }
+        loading="lazy"
+      />
+    </div>
+  )}
+
+  <div class="markdown-body post-content">
+    <Content />
+  </div>
+
+  {hasRelations && (
+    <div class="tags-wrapper post-relations">
+      {showEntityPills &&
+        linkedProjects.map((proj) => (
+          <TagPill variant="topic" href={`/projekte/${proj.id}`}>
+            Projekt: {proj.data.title}
+          </TagPill>
+        ))}
+      {showEntityPills &&
+        linkedEvents.map((ev) => (
+          <TagPill variant="topic" href={`/events/${ev.id}`}>
+            Termin: {ev.data.title}
+          </TagPill>
+        ))}
+      {showEntityPills &&
+        linkedDatasets.map((ds) => (
+          <TagPill variant="topic" href={`/daten/${ds.id}`}>
+            Datensatz: {ds.data.title}
+          </TagPill>
+        ))}
+      {(post.data.tags || []).map((tag) => (
+        <TagPill variant="tag" href={`/suche?tag=${encodeURIComponent(tag)}`}>
+          {tag}
+        </TagPill>
+      ))}
+    </div>
+  )}
+</SideCard>
+
+{showDiscussionCta && (
+  <section aria-label="Kommentare und Diskussion">
+    <div class="discussion-info">
+      <h2>Mitdiskutieren im Fediverse</h2>
+      <p>
+        Kommentare finden direkt im Fediverse statt – nicht hier auf der Website. Antworte auf den
+        Beitrag in unserer Community
+        <a
+          href={FEDIVERSE_DEFAULT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="link-inline"
+        >
+          c/opendata_ka <span class="link-arrow">🡵</span>
+        </a>
+        oder über
+        <a
+          href={FEDIVERSE_PROFILE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="link-inline"
+        >
+          u/codeforka <span class="link-arrow">🡵</span>
+        </a>
+        .
+      </p>
+    </div>
+
+    <Button variant="primary" href={discussionUrl} external={true}>
+      <span>Diskussion im Fediverse / Mastodon fortsetzen</span>
+      <span class="link-arrow">🡵</span>
+    </Button>
+  </section>
+)}
+
+<style>
+  .blog-card.mode-detail {
+    padding: 2rem;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.85rem;
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .meta-author-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .author-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--color-text);
+    font-weight: var(--font-medium);
+    text-decoration: none;
+  }
+
+  .author-link:hover .author-name {
+    color: var(--color-primary);
+  }
+
+  .author-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-sunken);
+  }
+
+  .author-fallback {
+    font-weight: var(--font-medium);
+    color: var(--color-text);
+  }
+
+  .meta-sep {
+    color: var(--color-text-muted);
+  }
+
+  .post-date-link,
+  time {
+    color: var(--color-text-muted);
+    font-size: var(--text-xs);
+    text-decoration: none;
+  }
+
+  .post-date-link:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+
+  .meta-fediverse-link {
+    font-size: var(--text-xs);
+  }
+
+  .post-title {
+    margin: 0 0 0.9rem;
+    font-size: var(--text-xl);
+    line-height: var(--leading-tight);
+  }
+
+  .post-title.detail-title {
+    margin: 0 0 1.25rem;
+    font-size: var(--text-3xl);
+  }
+
+  .post-media {
+    position: relative;
+    margin-bottom: 1.15rem;
+  }
+
+  .post-media :global(img) {
+    width: 100%;
+    max-height: 440px;
+    object-fit: cover;
+    display: block;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-sunken);
+  }
+
+  .post-content :global(> :first-child) {
+    margin-top: 0;
+  }
+
+  .post-content :global(> :last-child) {
+    margin-bottom: 0;
+  }
+
+  /* Restore prose list styling over SideCard's compact sidebar list reset */
+  :global(.side-card-body) .post-content :global(ul) {
+    display: block;
+    margin: 0 0 var(--space-5) 0;
+    padding-left: var(--space-6);
+  }
+
+  :global(.side-card-body) .post-content :global(ul:last-child) {
+    margin-bottom: 0;
+  }
+
+  :global(.side-card-body) .post-content :global(li) {
+    font-size: var(--text-base);
+    color: var(--color-text);
+    line-height: var(--leading-relaxed);
+  }
+
+  .post-relations {
+    margin-top: 1.15rem;
+    margin-bottom: 0;
+  }
+
+  section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg, 12px);
+    padding: 1.5rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.1rem;
+  }
+
+  section h2 {
+    margin: 0 0 0.4rem;
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    color: var(--color-text);
+  }
+
+  section p {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--leading-relaxed);
+  }
+
+  @media (max-width: 640px) {
+    .blog-card.mode-detail {
+      padding: 1.25rem;
+    }
+
+    .post-title.detail-title {
+      font-size: var(--text-2xl);
+    }
+  }
+</style>

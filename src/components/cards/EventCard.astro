@@ -1,0 +1,135 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import {
+  formatEventTime,
+  getEffectiveEventDate,
+  getEventDayMonth,
+  parseDateSafe,
+} from '../../utils/events';
+import EntityCard from './EntityCard.astro';
+
+interface Props {
+  event?: CollectionEntry<'events'> | Record<string, any>;
+  id?: string;
+  title?: string;
+  teaser?: string;
+  description?: string;
+  date?: string;
+  dateDay?: string;
+  dateMonth?: string;
+  time?: string;
+  location?: string;
+  category?: string;
+  tags?: string[];
+  status?: string;
+  series?: string;
+  organizationIds?: string[];
+  image?: string | null;
+  imageAlt?: string;
+  isRepresentative?: boolean;
+  moreCount?: number;
+  slim?: boolean;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  event,
+  id: propId,
+  title: propTitle,
+  teaser: propTeaser,
+  description: propDescription,
+  date: propDate,
+  dateDay: propDateDay,
+  dateMonth: propDateMonth,
+  time: propTime,
+  location: propLocation,
+  category: propCategory,
+  tags: propTags,
+  status: _status,
+  series: propSeries,
+  organizationIds: propOrganizationIds,
+  image: propImage,
+  imageAlt: propImageAlt,
+  isRepresentative = true,
+  moreCount: _moreCount,
+  slim = false,
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+const raw = event
+  ? 'data' in event && event.data
+    ? { id: event.id, description: event.body, ...event.data }
+    : event
+  : {};
+
+const id = propId ?? raw.id;
+const title = propTitle ?? raw.title ?? '';
+const teaser = propTeaser ?? raw.teaser;
+const description = propDescription ?? raw.description;
+const date =
+  propDate ??
+  raw.date ??
+  raw.dateStr ??
+  (event ? getEffectiveEventDate(event) || undefined : undefined);
+
+const resolvedDayMonth =
+  !(propDateDay ?? raw.dateDay) && !(propDateMonth ?? raw.dateMonth) && event
+    ? getEventDayMonth(event)
+    : { day: '', month: '' };
+
+const dateDay = propDateDay ?? raw.dateDay ?? resolvedDayMonth.day;
+const dateMonth = propDateMonth ?? raw.dateMonth ?? resolvedDayMonth.month;
+const time = propTime ?? raw.rhythm ?? raw.time ?? formatEventTime(raw.startTime, raw.endTime);
+const location = propLocation ?? raw.location;
+const category = propCategory ?? raw.category ?? 'Treffen';
+const tags = propTags ?? raw.tags ?? [];
+const series = propSeries ?? raw.series;
+const organizationIds = propOrganizationIds ?? raw.organizationIds ?? [];
+const image = propImage !== undefined ? propImage : raw.image;
+const imageAlt = propImageAlt ?? raw.imageAlt ?? title;
+
+const dateObj = date ? parseDateSafe(date) : null;
+const dayStr =
+  dateDay ||
+  (dateObj && !isNaN(dateObj.getTime()) ? String(dateObj.getDate()).padStart(2, '0') : '');
+const monthStr =
+  dateMonth ||
+  (dateObj && !isNaN(dateObj.getTime()) ? dateObj.toLocaleString('de-DE', { month: 'short' }) : '');
+
+const searchCorpus =
+  `${title} ${teaser || ''} ${description || ''} ${location || ''} ${category || ''}`.toLowerCase();
+
+const isGuest =
+  Array.isArray(organizationIds) &&
+  organizationIds.length > 0 &&
+  !organizationIds.includes('ok-lab-karlsruhe');
+const displayCategory = isGuest ? `${category} · Zu Gast` : category;
+const displayTime = time && time.trim() ? time.trim() : 'TBA';
+---
+
+<EntityCard
+  mode="image"
+  slim={slim}
+  title={title}
+  url={`/events/${id}`}
+  image={image}
+  imageAlt={imageAlt}
+  date={dayStr && monthStr ? { day: dayStr, month: monthStr } : undefined}
+  topRight={displayTime}
+  category={displayCategory}
+  description={teaser || description}
+  location={location}
+  tags={tags}
+  actionText="Details ansehen"
+  class={`event-card ${!isRepresentative ? 'series-follower' : ''} ${className}`}
+  data-id={id}
+  data-series={series || ''}
+  data-is-representative={isRepresentative ? 'true' : 'false'}
+  data-category={category || ''}
+  data-organizers={(organizationIds || []).join(',')}
+  data-date={date || ''}
+  data-search={searchCorpus}
+  {...rest}
+/>

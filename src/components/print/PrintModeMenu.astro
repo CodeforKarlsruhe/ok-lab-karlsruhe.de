@@ -1,0 +1,132 @@
+---
+---
+
+<div class="print-mode-menu" role="region" aria-label="Druckansichten">
+  <div class="print-menu-header">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="6 9 6 2 18 2 18 9"></polyline>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+      <rect x="6" y="14" width="12" height="8"></rect>
+    </svg>
+    <span>Drucken / Handout</span>
+  </div>
+  <div class="print-menu-actions">
+    <button type="button" class="print-menu-btn" data-print-trigger="steckbrief">
+      Steckbrief (A4)
+    </button>
+    <button type="button" class="print-menu-btn" data-print-trigger="flyer">
+      Flyer (Querformat)
+    </button>
+  </div>
+</div>
+
+<script>
+  function setupPrintModeMenu() {
+    const triggers = document.querySelectorAll<HTMLButtonElement>('[data-print-trigger]');
+    if (triggers.length === 0) return;
+
+    let styleEl = document.getElementById('dynamic-print-page') as HTMLStyleElement | null;
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'dynamic-print-page';
+      document.head.appendChild(styleEl);
+    }
+
+    const setMode = (mode: 'steckbrief' | 'flyer') => {
+      document.documentElement.dataset.printMode = mode;
+      styleEl!.textContent =
+        mode === 'flyer'
+          ? '@page { size: A4 landscape; margin: 1cm; }'
+          : '@page { size: A4 portrait; margin: 1.3cm 1.5cm; }';
+    };
+
+    triggers.forEach((btn) => {
+      if (btn.dataset.printBound === 'true') return;
+      btn.dataset.printBound = 'true';
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.printTrigger === 'flyer' ? 'flyer' : 'steckbrief';
+        setMode(mode);
+        window.print();
+      });
+    });
+
+    if (document.documentElement.dataset.printResetBound !== 'true') {
+      document.documentElement.dataset.printResetBound = 'true';
+      window.addEventListener('afterprint', () => {
+        setMode('steckbrief');
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupPrintModeMenu);
+  } else {
+    setupPrintModeMenu();
+  }
+</script>
+
+<style>
+  .print-mode-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--color-border);
+    background-color: var(--color-bg-subtle);
+  }
+
+  .print-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    color: var(--color-text-muted);
+  }
+
+  .print-menu-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .print-menu-btn {
+    flex: 1 1 auto;
+    padding: 0.38rem 0.65rem;
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    color: var(--color-text-secondary);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-align: center;
+    white-space: nowrap;
+    transition:
+      border-color var(--transition-fast),
+      color var(--transition-fast),
+      background-color var(--transition-fast);
+  }
+
+  .print-menu-btn:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    background-color: var(--color-primary-light);
+  }
+
+  @media print {
+    .print-mode-menu {
+      display: none !important;
+    }
+  }
+</style>

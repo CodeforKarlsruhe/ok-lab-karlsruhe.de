@@ -1,0 +1,51 @@
+---
+import { getEntry } from 'astro:content';
+
+interface Props {
+  name?: string;
+  size?: number | string;
+  strokeWidth?: number | string;
+  class?: string;
+  fallbackSvg?: string;
+}
+
+const { name, size = 22, strokeWidth, class: className = '', fallbackSvg } = Astro.props;
+
+let svgHtml = '';
+if (name) {
+  const iconEntry = await getEntry('icons', name);
+  if (iconEntry?.data?.svg) {
+    svgHtml = iconEntry.data.svg;
+  }
+}
+
+if (!svgHtml && fallbackSvg) {
+  svgHtml = fallbackSvg;
+}
+
+const styleParts: string[] = [];
+if (size) {
+  styleParts.push(`--icon-size: ${typeof size === 'number' ? `${size}px` : size};`);
+}
+if (strokeWidth) {
+  styleParts.push(`--icon-stroke-width: ${strokeWidth};`);
+}
+const customStyle = styleParts.length > 0 ? styleParts.join(' ') : undefined;
+---
+
+{svgHtml ? <span class={`svg-icon ${className}`} style={customStyle} set:html={svgHtml} /> : null}
+
+<style>
+  .svg-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0;
+  }
+  .svg-icon :global(svg) {
+    width: var(--icon-size, 22px);
+    height: var(--icon-size, 22px);
+    display: block;
+    stroke-width: var(--icon-stroke-width, inherit);
+  }
+</style>

@@ -1,0 +1,120 @@
+---
+interface Props {
+  vision?: any;
+  whoWeAre?: any;
+}
+
+const { vision, whoWeAre } = Astro.props;
+const showSection = Boolean(vision?.title || vision?.text || whoWeAre?.title || whoWeAre?.text);
+---
+
+{showSection && (
+  <section class="page-section">
+    <div class="section-container">
+      <div class="two-col">
+        {(vision?.title || vision?.text) && (
+          <div>
+            {vision.title && <h2>{vision.title}</h2>}
+            {vision.text && <p>{vision.text}</p>}
+            {vision.goals && vision.goals.length > 0 && (
+              <>
+                <p class="goals-label">Schwerpunkte unserer Arbeit:</p>
+                <ul>
+                  {vision.goals.map((g: string) => (
+                    <li>{g}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        )}
+        {(whoWeAre?.title || whoWeAre?.text) && (
+          <div>
+            {whoWeAre.title && <h2>{whoWeAre.title}</h2>}
+            {whoWeAre.text && <p>{whoWeAre.text}</p>}
+            <p>
+              Weitere Informationen zum Netzwerk findest du bei{' '}
+              <a
+                href="https://codefor.de"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link-inline"
+              >
+                <span>Code for Germany</span> <span class="link-arrow">🡵</span>
+              </a>{' '}
+              und der{' '}
+              <a
+                href="https://okfn.de"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link-inline"
+              >
+                <span>Open Knowledge Foundation Deutschland</span> <span class="link-arrow">🡵</span>
+              </a>
+              .
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3.5rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    margin-bottom: 0.75rem;
+  }
+
+  .goals-label {
+    font-weight: 600;
+    color: var(--color-text);
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  li {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    padding: 0.3rem 0 0.3rem 1.5rem;
+    position: relative;
+  }
+
+  li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+
+  @media (max-width: 900px) {
+    .two-col {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+  }
+</style>

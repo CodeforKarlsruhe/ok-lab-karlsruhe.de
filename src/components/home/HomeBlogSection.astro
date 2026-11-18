@@ -1,0 +1,47 @@
+---
+import { getCollection } from 'astro:content';
+import BlogPostCard from '../blog/BlogPostCard.astro';
+import Button from '../ui/Button.astro';
+import { loadBlogContext, resolveBlogMeta } from '../../utils/blog';
+import { parseDateSafe } from '../../utils/events';
+
+const [rawPosts, ctx] = await Promise.all([getCollection('blog'), loadBlogContext()]);
+
+const recentPosts = [...rawPosts]
+  .sort((a, b) => parseDateSafe(b.data.date).getTime() - parseDateSafe(a.data.date).getTime())
+  .slice(0, 2);
+---
+
+{recentPosts.length > 0 && (
+  <section class="page-section" id="blog">
+    <div class="section-container">
+      <div class="section-header">
+        <h2>Aktuelles aus dem Blog</h2>
+      </div>
+
+      <div class="blog-home-grid">
+        {recentPosts.map((post) => {
+          const meta = resolveBlogMeta(post, ctx);
+          return (
+            <BlogPostCard
+              post={post}
+              author={meta.author}
+              linkedProjects={meta.linkedProjects}
+              linkedEvents={meta.linkedEvents}
+              linkedDatasets={meta.linkedDatasets}
+              formattedDate={meta.formattedDate}
+              discussionUrl={meta.discussionUrl}
+              mode="feed"
+            />
+          );
+        })}
+      </div>
+
+      <div class="center-actions">
+        <Button href="/blog" variant="outline" size="md">
+          Alle Blogeinträge anzeigen
+        </Button>
+      </div>
+    </div>
+  </section>
+)}

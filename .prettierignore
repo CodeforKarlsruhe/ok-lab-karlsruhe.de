@@ -1,0 +1,8 @@
+dist/
+.astro/
+node_modules/
+.env*
+.agents/
+package-lock.json
+pnpm-lock.yaml
+public/assets/vendor/**

@@ -1,0 +1,561 @@
+---
+import PrintBrandHeader from '../layout/PrintBrandHeader.astro';
+import { generateQrSvg } from '../../utils/qrcode';
+
+export interface PrintMetaItem {
+  label: string;
+  value: string;
+  mono?: boolean;
+}
+
+interface Props {
+  typeLabel: string;
+  title: string;
+  teaser?: string;
+  description?: string;
+  image?: string | null;
+  galleryImages?: string[];
+  topMeta?: PrintMetaItem[];
+  bottomMeta?: PrintMetaItem[];
+  canonicalUrl: string;
+  displayUrl: string;
+  badges?: string[];
+  accentColor?: string;
+}
+
+const {
+  typeLabel,
+  title,
+  teaser = '',
+  description = '',
+  image = null,
+  galleryImages = [],
+  topMeta = [],
+  bottomMeta = [],
+  canonicalUrl,
+  displayUrl,
+  badges = [],
+  accentColor = '#e8f1f8',
+} = Astro.props;
+
+const normalizeAssetUrl = (url: string) =>
+  url.startsWith('/') || url.startsWith('http://') || url.startsWith('https://') ? url : `/${url}`;
+
+const heroImage = image ? normalizeAssetUrl(image) : null;
+const cleanGallery = galleryImages.filter(Boolean).map(normalizeAssetUrl).slice(0, 3);
+const visibleTopMeta = topMeta.filter((m) => m.value && m.value.trim().length > 0);
+const visibleBottomMeta = bottomMeta.filter((m) => m.value && m.value.trim().length > 0);
+const visibleBadges = badges.filter(Boolean).slice(0, 5);
+
+const steckbriefText = description.trim() || teaser.trim();
+const flyerTeaser = teaser.trim() || description.trim();
+
+const itemQrSvg = generateQrSvg(canonicalUrl, { margin: 1 });
+const labQrSvg = generateQrSvg('https://ok-lab-karlsruhe.de', { margin: 1 });
+---
+
+<div class="entity-print-sheets" aria-hidden="true">
+  <!-- Mode 1: Single-page A4 Portrait Steckbrief (Default) -->
+  <section class="print-steckbrief-sheet">
+    <PrintBrandHeader />
+
+    <div class="steckbrief-type">{typeLabel}</div>
+    <h1 class="steckbrief-title">{title}</h1>
+
+    {visibleTopMeta.length > 0 && (
+      <dl class="steckbrief-meta-list steckbrief-meta-top">
+        {visibleTopMeta.map((item) => (
+          <div class="steckbrief-meta-row">
+            <dt>{item.label}:</dt>
+            <dd>{item.value}</dd>
+          </div>
+        ))}
+      </dl>
+    )}
+
+    {steckbriefText && (
+      <div class="steckbrief-description">
+        <div class="steckbrief-desc-label">Kurzbeschreibung:</div>
+        <p class="steckbrief-desc-text">{steckbriefText}</p>
+      </div>
+    )}
+
+    {heroImage && (
+      <div class="steckbrief-image-box">
+        <img src={heroImage} alt="" />
+      </div>
+    )}
+
+    {visibleBottomMeta.length > 0 && (
+      <dl class="steckbrief-meta-list steckbrief-meta-bottom">
+        {visibleBottomMeta.map((item) => (
+          <div class="steckbrief-meta-row">
+            <dt>{item.label}:</dt>
+            <dd class:list={[{ 'is-mono': item.mono }]}>{item.value}</dd>
+          </div>
+        ))}
+      </dl>
+    )}
+
+    <footer class="steckbrief-qr-footer">
+      <div class="steckbrief-qr-box" set:html={itemQrSvg} />
+      <div class="steckbrief-qr-url">{displayUrl}</div>
+    </footer>
+  </section>
+
+  <!-- Mode 2: A4 Landscape Visual Flyer -->
+  <section class="print-flyer-sheet" style={`background-color: ${accentColor};`}>
+    <div class="flyer-top-grid">
+      <div class="flyer-hero-frame">
+        {heroImage ? (
+          <img src={heroImage} alt="" />
+        ) : (
+          <div class="flyer-hero-placeholder">
+            <span class="flyer-placeholder-kicker">{typeLabel}</span>
+            <span class="flyer-placeholder-title">{title}</span>
+          </div>
+        )}
+      </div>
+
+      <div class="flyer-side-col">
+        {cleanGallery.length > 0
+          ? cleanGallery.map((imgUrl) => (
+              <div class="flyer-thumb-frame">
+                <img src={imgUrl} alt="" />
+              </div>
+            ))
+          : visibleTopMeta.slice(0, 3).map((item) => (
+              <div class="flyer-fact-card">
+                <div class="flyer-fact-label">{item.label}</div>
+                <div class="flyer-fact-value">{item.value}</div>
+              </div>
+            ))}
+      </div>
+    </div>
+
+    <div class="flyer-bottom-grid">
+      <div class="flyer-info-card">
+        <div class="flyer-info-text">
+          <div class="flyer-url">{displayUrl}</div>
+          <h1 class="flyer-title">{title}</h1>
+          {flyerTeaser && <p class="flyer-teaser">{flyerTeaser}</p>}
+        </div>
+
+        <div class="flyer-card-footer">
+          <div class="flyer-item-qr" set:html={itemQrSvg} />
+          {visibleBadges.length > 0 && (
+            <div class="flyer-badges">
+              {visibleBadges.map((badge) => (
+                <span class="flyer-badge">{badge}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div class="flyer-brand-col">
+        <div class="flyer-lab-id">
+          <img src="/assets/images/okl.svg" alt="" class="flyer-lab-logo" />
+          <span class="flyer-lab-url">ok-lab-karlsruhe.de</span>
+        </div>
+        <div class="flyer-lab-qr" set:html={labQrSvg} />
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+  .entity-print-sheets {
+    display: none;
+  }
+
+  @media print {
+    @page {
+      size: A4 portrait;
+      margin: 1.3cm 1.5cm;
+    }
+
+    .entity-print-sheets {
+      display: block !important;
+      font-family: var(--font-family-doc) !important;
+      color: #1a1a1a !important;
+      background: #ffffff !important;
+    }
+
+    /* Default mode: Steckbrief (A4 Portrait) */
+    .print-steckbrief-sheet {
+      display: flex;
+      flex-direction: column;
+      min-height: 26.4cm;
+      max-height: 26.7cm;
+      overflow: hidden;
+    }
+
+    .print-flyer-sheet {
+      display: none !important;
+    }
+
+    /* Alternate mode: Landscape Flyer */
+    :global(html[data-print-mode='flyer']) .print-steckbrief-sheet {
+      display: none !important;
+    }
+
+    :global(html[data-print-mode='flyer']) .print-flyer-sheet {
+      display: flex !important;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.45cm;
+      height: 18.6cm;
+      width: 100%;
+      padding: 0.65cm;
+      border-radius: 6px;
+      overflow: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* --- Steckbrief Typography & Blocks --- */
+    .steckbrief-type {
+      font-size: 9.5pt;
+      color: #4b5563 !important;
+      margin-top: -0.2rem;
+      margin-bottom: 0.42cm;
+    }
+
+    .steckbrief-title {
+      font-size: 18pt;
+      font-weight: 700;
+      line-height: 1.18;
+      margin: 0 0 0.4cm 0;
+      color: #1a1a1a !important;
+    }
+
+    .steckbrief-meta-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.14cm;
+      margin: 0 0 0.35cm 0;
+      font-size: 10pt;
+      line-height: 1.38;
+    }
+
+    .steckbrief-meta-row {
+      display: block;
+    }
+
+    .steckbrief-meta-row dt {
+      display: inline;
+      font-weight: 700;
+      color: #1a1a1a !important;
+      margin-right: 0.35em;
+    }
+
+    .steckbrief-meta-row dd {
+      display: inline;
+      margin: 0;
+      color: #1a1a1a !important;
+    }
+
+    .steckbrief-meta-row dd.is-mono {
+      font-family: var(--font-family-mono);
+      font-size: 9pt;
+      word-break: break-all;
+    }
+
+    .steckbrief-description {
+      margin-bottom: 0.4cm;
+      font-size: 10pt;
+      line-height: 1.42;
+    }
+
+    .steckbrief-desc-label {
+      font-weight: 700;
+      margin-bottom: 0.08cm;
+      color: #1a1a1a !important;
+    }
+
+    .steckbrief-desc-text {
+      margin: 0;
+      color: #1a1a1a !important;
+      display: -webkit-box;
+      -webkit-line-clamp: 9;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .steckbrief-image-box {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0.25cm 0 0.5cm;
+    }
+
+    .steckbrief-image-box img {
+      max-height: 6cm;
+      max-width: 82%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 3px;
+      border: 0.5pt solid #e5e7eb;
+    }
+
+    .steckbrief-meta-bottom {
+      margin-top: 0.1cm;
+      margin-bottom: 0.4cm;
+    }
+
+    .steckbrief-qr-footer {
+      margin-top: auto;
+      padding-top: 0.2cm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.12cm;
+    }
+
+    .steckbrief-qr-box {
+      width: 2.8cm;
+      height: 2.8cm;
+      background: #ffffff !important;
+      padding: 2pt;
+      border: 0.5pt solid #e5e7eb;
+    }
+
+    .steckbrief-qr-box :global(svg),
+    .flyer-item-qr :global(svg),
+    .flyer-lab-qr :global(svg) {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .steckbrief-qr-url {
+      font-family: var(--font-family-mono);
+      font-size: 8pt;
+      color: #4b5563 !important;
+    }
+
+    /* --- Landscape Flyer Styles --- */
+    .flyer-top-grid {
+      display: grid;
+      grid-template-columns: 2.35fr 1fr;
+      gap: 0.45cm;
+      flex: 1 1 0;
+      min-height: 0;
+    }
+
+    .flyer-hero-frame {
+      background: #ffffff !important;
+      border-radius: 4px;
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .flyer-hero-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .flyer-hero-placeholder {
+      padding: 1cm;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25cm;
+    }
+
+    .flyer-placeholder-kicker {
+      font-size: 10pt;
+      font-weight: 700;
+      color: #4b5563 !important;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .flyer-placeholder-title {
+      font-size: 20pt;
+      font-weight: 700;
+      color: #1a1a1a !important;
+    }
+
+    .flyer-side-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35cm;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .flyer-thumb-frame {
+      flex: 1 1 0;
+      min-height: 0;
+      background: #ffffff !important;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .flyer-thumb-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .flyer-fact-card {
+      flex: 1 1 0;
+      min-height: 0;
+      background: rgba(255, 255, 255, 0.88) !important;
+      border-radius: 4px;
+      padding: 0.3cm 0.4cm;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.08cm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .flyer-fact-label {
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #4b5563 !important;
+    }
+
+    .flyer-fact-value {
+      font-size: 9.5pt;
+      font-weight: 600;
+      color: #1a1a1a !important;
+      line-height: 1.25;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .flyer-bottom-grid {
+      display: grid;
+      grid-template-columns: 2.35fr 1fr;
+      gap: 0.45cm;
+      height: 7.2cm;
+      flex-shrink: 0;
+    }
+
+    .flyer-info-card {
+      background: rgba(255, 255, 255, 0.94) !important;
+      border-radius: 4px;
+      padding: 0.45cm 0.55cm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.3cm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .flyer-url {
+      font-size: 9pt;
+      font-weight: 700;
+      color: #1a1a1a !important;
+      margin-bottom: 0.08cm;
+    }
+
+    .flyer-title {
+      font-size: 15.5pt;
+      font-weight: 700;
+      line-height: 1.15;
+      color: #1a1a1a !important;
+      margin: 0 0 0.14cm 0;
+    }
+
+    .flyer-teaser {
+      font-size: 9.5pt;
+      line-height: 1.35;
+      color: #374151 !important;
+      margin: 0;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .flyer-card-footer {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 0.45cm;
+    }
+
+    .flyer-item-qr {
+      width: 2.35cm;
+      height: 2.35cm;
+      background: #ffffff !important;
+      padding: 2pt;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .flyer-badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 0.16cm;
+    }
+
+    .flyer-badge {
+      font-size: 8pt;
+      font-weight: 600;
+      color: #374151 !important;
+      background: #f3f4f6 !important;
+      border: 0.5pt solid #d1d5db;
+      padding: 0.08cm 0.22cm;
+      border-radius: 3px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .flyer-brand-col {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35cm;
+      padding: 0.25cm;
+    }
+
+    .flyer-lab-id {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15cm;
+    }
+
+    .flyer-lab-logo {
+      width: 1.85cm;
+      height: auto;
+      display: block;
+    }
+
+    .flyer-lab-url {
+      font-size: 7.8pt;
+      font-weight: 700;
+      color: #1a1a1a !important;
+      white-space: nowrap;
+    }
+
+    .flyer-lab-qr {
+      width: 2.4cm;
+      height: 2.4cm;
+      background: #ffffff !important;
+      padding: 2pt;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+  }
+</style>

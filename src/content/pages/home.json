@@ -1,0 +1,49 @@
+{
+  "hero": {
+    "titleLine1": "Offene Daten für ein",
+    "titleHighlight": "besseres Karlsruhe",
+    "lead": "Wir erschließen öffentliche Daten für Karlsruhe und bauen quelloffene Werkzeuge für Bürgerinnen und Bürger. Als ehrenamtliche Initiative von Code for Germany arbeiten wir an Umweltsensoren, Verkehrsdaten und kommunaler Transparenz.",
+    "primaryButtonText": "Nächstes Treffen",
+    "secondaryButtonText": "Projekte ansehen",
+    "image": "/assets/images/home/hero/image.webp",
+    "imageAlt": "Open Data Day Karlsruhe Arbeitsgruppe (© OK Lab Karlsruhe)"
+  },
+  "meetupBanner": {
+    "showBanner": true,
+    "highlightEvent": "odd26",
+    "highlightBadge": "Schwerpunkt"
+  },
+  "featuredProjects": ["ris-ki", "platachat", "klimadashboard"],
+  "focusThemes": [
+    {
+      "title": "Klimaschutz & Umwelt",
+      "category": "Umwelt & Klima",
+      "description": "Luftqualität, Grünflächen und Stadtklima-Daten für Karlsruhe. Datengestützte Werkzeuge zur Beobachtung von Umweltparametern.",
+      "icon": "leaf",
+      "projects": []
+    },
+    {
+      "title": "Mobilität & Barrierefreiheit",
+      "category": "Barrierefreiheit",
+      "description": "Daten zum Radverkehr, barrierefreien Haltestellen und Infrastruktur für eine barrierearme Stadt.",
+      "icon": "bike",
+      "projects": []
+    },
+    {
+      "title": "Kommunale Transparenz",
+      "category": "Politik",
+      "description": "Zugänglichkeit städtischer Beschlussvorlagen, Haushaltsdaten und Ratsinformationen.",
+      "icon": "landmark",
+      "projects": []
+    }
+  ],
+  "sectionTexts": {
+    "eventsTitle": "Termine",
+    "projectsTitle": "Ausgewählte Projekte",
+    "themesTitle": "Themenschwerpunkte",
+    "ctaTitle": "Mitmachen bei Code for Karlsruhe",
+    "ctaDesc": "Freiwillige aus Softwareentwicklung, Design, Recherche und Zivilgesellschaft gestalten gemeinsam digitale Werkzeuge für Karlsruhe.",
+    "ctaButtonPlenum": "Nächstes Treffen besuchen",
+    "ctaButtonAbout": "Über uns"
+  }
+}

@@ -1,0 +1,58 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/layout/PageHeader.astro';
+import EntityCard from '../../components/cards/EntityCard.astro';
+import Icon from '../../components/ui/Icon.astro';
+import { getCollection } from 'astro:content';
+
+const allTools = await getCollection('tools');
+
+interface ToolItem {
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  icon?: string;
+  isExternal: boolean;
+}
+
+const tools: ToolItem[] = allTools
+  .sort((a, b) => a.data.title.localeCompare(b.data.title, 'de'))
+  .map((t): ToolItem => {
+    const url = t.data.url;
+    return {
+      id: t.id,
+      title: t.data.title,
+      description: t.data.description,
+      url,
+      icon: t.data.icon || t.id,
+      isExternal: url.startsWith('http') || url.startsWith('webcal'),
+    };
+  });
+---
+
+<Layout title="Internes Tooling" activeNav="tooling">
+  <main class="tooling-page">
+    <!-- Reusable PageHeader -->
+    <PageHeader title="Internes Tooling" />
+
+    <div class="main-container">
+      <!-- Tools Grid -->
+      <div class="cards-grid">
+        {tools.map((item) => (
+          <EntityCard
+            mode="simple"
+            title={item.title}
+            description={item.description}
+            url={item.url}
+            actionText="Website öffnen"
+          >
+            <Fragment slot="icon">
+              <Icon name={item.icon || item.id} size={22} strokeWidth={2} />
+            </Fragment>
+          </EntityCard>
+        ))}
+      </div>
+    </div>
+  </main>
+</Layout>

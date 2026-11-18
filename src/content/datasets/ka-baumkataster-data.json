@@ -1,0 +1,14 @@
+{
+  "title": "Baumkataster Karlsruhe",
+  "teaser": "Detailliertes Verzeichnis von über 144.000 gepflegten Bäumen in Karlsruhe inklusive Geokoordinaten.",
+  "description": "Das Baumkataster gibt eine Übersicht über alle von der Stadt Karlsruhe gepflegten Bäume. Zu jedem Baum gibt es Geokoordinaten, den Stadtteil, Baum-Art und -Gruppe, sowie eine Beschreibung des Baumes. Es gibt bereits eine Karten-Visualisierung der Daten unter https://ok-lab-karlsruhe.de/projekte/baumkataster/ . Passwort: odd2025",
+  "publisherIds": ["stadt-karlsruhe-liegenschaftsamt", "ok-lab-karlsruhe"],
+  "url": "https://geoportal.karlsruhe.de/fachplaene?page=Baumkataster&views=LK-Gewerbe-Nacht-Legende_MOBILE%2CKarte-Schutzgebiete_MOBILE%2CGr%C3%BCnanlagen-und-Spielpl%C3%A4tze-Hintergrundkarten_DESKTOP%2CGr%C3%BCnanlagen-und-Spielpl%C3%A4tze-Karte_MOBILE%2CLK-Gewerbe-Tag-Karte_MOBILE%2CLK-Stra%C3%9Fenbahn-Tag-Legende_MOBILE%2CWasserschutzgebiete-Karte_MOBILE%2CStartseite_MOBILE%2CStartseite_DESKTOP%2CBaumkataster-Hintergrundkarten_DESKTOP%2CBaumkataster-Hintergrundkarten_MOBILE%2CMen%C3%BC-Rechtliche-Hinweise_MOBILE",
+  "tags": ["Umweltschutz", "Open Data", "Verwaltung"],
+  "formats": ["csv", "json"],
+  "portalId": "transparenzportal-der-stadt-karlsruhe",
+  "size": "144.758 Bäume",
+  "personIds": ["daniel-schwarz", "andreas-kugel"],
+  "useCases": "Analysen rund um Karlsruhe, Digital Twin, Mini-City Karlsruhe",
+  "image": "/assets/images/datasets/ka-baumkataster-data/image.webp"
+}

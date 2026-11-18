@@ -1,0 +1,184 @@
+---
+interface DecisionItem {
+  id: string;
+  title: string;
+  result: string;
+  signedPdfUrl?: string;
+}
+
+interface Props {
+  decisions?: DecisionItem[];
+}
+
+const { decisions = [] } = Astro.props;
+---
+
+{decisions.length > 0 && (
+  <section>
+    <h2>Formale Beschlussfassungen</h2>
+    <div class="decisions-list">
+      {decisions.map((dec, idx) => (
+        <article>
+          <header>
+            <span class="decision-id" title={dec.id}>
+              Beschluss #{idx + 1}
+            </span>
+            <span class={`status-stamp status-${dec.result}`}>{dec.result}</span>
+          </header>
+          <h3>{dec.title}</h3>
+          {dec.signedPdfUrl && (
+            <div class="decision-pdf">
+              <a
+                href={dec.signedPdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link-action"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                <span>Digital signiertes Beschluss-PDF öffnen</span>
+                <span class="link-arrow">🡵</span>
+              </a>
+            </div>
+          )}
+        </article>
+      ))}
+    </div>
+  </section>
+)}
+
+<style>
+  section {
+    margin-bottom: 2.5rem;
+    page-break-inside: avoid;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0 0 1rem;
+    color: var(--color-text);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.4rem;
+  }
+
+  .decisions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  article {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    background: var(--color-surface);
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+  }
+
+  .decision-id {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-text);
+  }
+
+  .status-stamp {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    letter-spacing: normal;
+  }
+
+  .status-beschlossen {
+    background: rgba(22, 101, 52, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.25);
+  }
+
+  .status-abgelehnt {
+    background: rgba(153, 27, 27, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(248, 113, 113, 0.25);
+  }
+
+  .status-vertagt {
+    background: rgba(146, 64, 14, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.25);
+  }
+
+  h3 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-text);
+  }
+
+  .decision-pdf {
+    margin-top: 0.5rem;
+    font-size: 0.825rem;
+  }
+
+  @media print {
+    section {
+      margin-bottom: 1.25rem;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    h2 {
+      border-bottom: none !important;
+      padding-bottom: 0 !important;
+      font-size: 13pt !important;
+      margin: 0.8rem 0 0.4rem !important;
+      color: #1a1a1a !important;
+    }
+
+    .decisions-list {
+      gap: 0.5rem;
+    }
+
+    article {
+      border: 1px solid #d1d5db !important;
+      background: transparent !important;
+      padding: 0.5rem 0.75rem !important;
+      border-radius: 4px !important;
+    }
+
+    .decision-id,
+    h3 {
+      color: #1a1a1a !important;
+    }
+
+    .status-stamp {
+      color: #1a1a1a !important;
+      background: transparent !important;
+      border: 1px solid #4b5563 !important;
+    }
+
+    .decision-pdf {
+      display: none !important;
+    }
+  }
+</style>

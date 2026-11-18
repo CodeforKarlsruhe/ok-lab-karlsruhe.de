@@ -1,0 +1,107 @@
+---
+interface Props {
+  imageAlt?: string | null;
+  alt?: string | null;
+  metadata?: string | null;
+  copyright?: string | null;
+  imageSrc?: string | null;
+  class?: string;
+  position?: 'bottom-right' | 'bottom-left' | 'top-right';
+}
+
+const {
+  imageAlt,
+  alt,
+  metadata,
+  copyright,
+  imageSrc,
+  class: className = '',
+  position = 'bottom-right',
+} = Astro.props;
+
+// Determine if image is SVG (SVGs are excluded per requirement)
+const isSvg = Boolean(
+  imageSrc && imageSrc.split('?')[0].split('#')[0].toLowerCase().trim().endsWith('.svg')
+);
+
+const text = (imageAlt || alt || metadata || copyright || '')?.trim() || null;
+const hasMeta = !isSvg && Boolean(text);
+---
+
+{hasMeta && (
+  <div class:list={['image-meta-badge', `pos-${position}`, className]}>
+    <button
+      type="button"
+      class="image-meta-btn"
+      aria-label="Bildinformationen und Urheberrechte"
+      title="Bildinformationen"
+      aria-expanded="false"
+    >
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
+      </svg>
+    </button>
+    <div class="image-meta-popover" role="tooltip">
+      <div class="meta-row">
+        <span class="meta-icon" aria-hidden="true">
+          ℹ️
+        </span>
+        <span class="meta-text">{text}</span>
+      </div>
+    </div>
+  </div>
+)}
+
+<script>
+  // Ensure click outside and Escape close open popovers, and click toggles
+  if (typeof window !== 'undefined' && !(window as any).__imageMetaListenerAdded) {
+    (window as any).__imageMetaListenerAdded = true;
+
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement | null;
+      const badge = target?.closest('.image-meta-badge');
+      if (target?.closest('.image-meta-btn') && badge) {
+        e.preventDefault();
+        e.stopPropagation();
+        const wasOpen = badge.classList.contains('is-open');
+        document.querySelectorAll('.image-meta-badge.is-open').forEach((el) => {
+          el.classList.remove('is-open');
+          el.querySelector('.image-meta-btn')?.setAttribute('aria-expanded', 'false');
+        });
+        if (!wasOpen) {
+          badge.classList.add('is-open');
+          badge.querySelector('.image-meta-btn')?.setAttribute('aria-expanded', 'true');
+        }
+      } else if (badge) {
+        // Clicks inside popover should not bubble to parent card links
+        e.stopPropagation();
+      } else {
+        document.querySelectorAll('.image-meta-badge.is-open').forEach((el) => {
+          el.classList.remove('is-open');
+          el.querySelector('.image-meta-btn')?.setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.image-meta-badge.is-open').forEach((el) => {
+          el.classList.remove('is-open');
+          el.querySelector('.image-meta-btn')?.setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+  }
+</script>

@@ -1,0 +1,509 @@
+---
+import ImageMetaBadge from '../ui/ImageMetaBadge.astro';
+import ArrowRight from '../ui/ArrowRight.astro';
+import TagPill from '../ui/TagPill.astro';
+import { parseDateSafe } from '../../utils/events';
+import type { SearchDoc } from '../../utils/search';
+
+interface SubLink {
+  title: string;
+  url?: string;
+}
+
+export type TagItem = string | { label: string; href?: string };
+
+interface Props {
+  doc?: SearchDoc;
+  mode?: 'image' | 'simple';
+  slim?: boolean;
+  /** Image mode without header (e.g. recurring meeting cards on /events) */
+  hideImage?: boolean;
+  title?: string;
+  url?: string;
+  actionText?: string;
+  image?: string | null;
+  imageAlt?: string;
+  date?: { day: string | number; month: string; year?: string | number };
+  topRight?: string;
+  category?: string;
+  categoryMuted?: boolean;
+  description?: string;
+  location?: string;
+  tags?: TagItem[];
+  links?: SubLink[];
+  externalLinks?: { title: string; items: SubLink[] };
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  doc,
+  mode = 'image',
+  slim = false,
+  hideImage = false,
+  title: propTitle,
+  url: propUrl,
+  actionText: propActionText,
+  image: propImage,
+  imageAlt: propImageAlt,
+  date: propDate,
+  topRight: propTopRight,
+  category: propCategory,
+  categoryMuted: propCategoryMuted,
+  description: propDescription,
+  location,
+  tags: propTags,
+  links = [],
+  externalLinks,
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+const title = propTitle ?? doc?.title ?? '';
+const url = propUrl ?? doc?.url ?? '#';
+const image = propImage !== undefined ? propImage : doc?.image;
+const imageAlt = propImageAlt ?? doc?.imageAlt;
+const topRight = propTopRight ?? doc?.typeLabel;
+const category = propCategory ?? doc?.category;
+const categoryMuted = propCategoryMuted ?? (doc ? doc.type === 'dataset' : false);
+const description = propDescription ?? doc?.description;
+const tags = propTags ?? doc?.tags ?? [];
+
+let date = propDate;
+if (!date && doc?.date && ['event', 'protocol', 'blog'].includes(doc.type)) {
+  const parsed = parseDateSafe(doc.date);
+  if (!isNaN(parsed.getTime())) {
+    date = {
+      day: String(parsed.getDate()).padStart(2, '0'),
+      month: parsed.toLocaleString('de-DE', { month: 'short' }),
+    };
+  }
+}
+
+const isExternal = /^(https?:|webcal:)/.test(url);
+const target = isExternal ? '_blank' : undefined;
+const rel = isExternal ? 'noopener noreferrer' : undefined;
+const actionText = propActionText || (isExternal ? 'Website öffnen' : 'Details ansehen');
+const img = image ? (/^(\/|http)/.test(image) ? image : `/${image}`) : null;
+const alt = imageAlt || title;
+const extItems = externalLinks?.items || [];
+---
+
+<article class:list={['card', 'entity-card', `mode-${mode}`, { slim }, className]} {...rest}>
+  {mode === 'image' && !hideImage && (
+    <div class="entity-card-header">
+      {img && (
+        <a
+          href={url}
+          target={target}
+          rel={rel}
+          tabindex="-1"
+          aria-hidden="true"
+          class="entity-card-img-link"
+        >
+          <img src={img} alt={alt} loading="lazy" />
+        </a>
+      )}
+      {date && (
+        <span class="entity-card-date">
+          <span class="date-month">{date.month}</span>
+          <span class="date-day">{date.day}</span>
+        </span>
+      )}
+      {topRight && <span class="entity-card-top-right">{topRight}</span>}
+      {img && (
+        <ImageMetaBadge
+          imageAlt={imageAlt && imageAlt !== title ? imageAlt : undefined}
+          imageSrc={img}
+        />
+      )}
+    </div>
+  )}
+
+  <div class="card-body">
+    <div class="entity-card-head">
+      {mode === 'simple' && (
+        <div class="entity-card-lead">
+          {date ? (
+            <span class="entity-card-date-box">
+              <span class="date-day">{date.day}</span>
+              <span class="date-month">{date.month}</span>
+              {date.year && <span class="date-year">{date.year}</span>}
+            </span>
+          ) : (
+            <span class="entity-card-icon">
+              <slot name="icon" />
+            </span>
+          )}
+        </div>
+      )}
+      <div class="entity-card-title-area">
+        {category && (
+          <span class:list={['category-label', { muted: categoryMuted }]}>{category}</span>
+        )}
+        <h3 class="card-title">
+          <a href={url} target={target} rel={rel}>
+            {title}
+          </a>
+        </h3>
+      </div>
+    </div>
+
+    {description && <p class="card-description">{description}</p>}
+
+    {location && (
+      <div class="entity-card-location">
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+        <span>{location}</span>
+      </div>
+    )}
+
+    {tags.length > 0 && (
+      <div class="tags-wrapper">
+        {tags.slice(0, 4).map((t) => {
+          const label = typeof t === 'string' ? t : t.label;
+          const tagHref = typeof t === 'string' ? `/suche?tag=${encodeURIComponent(t)}` : t.href;
+          return (
+            <TagPill variant="tag" href={tagHref}>
+              {label}
+            </TagPill>
+          );
+        })}
+      </div>
+    )}
+
+    {links.length > 0 && (
+      <div class="entity-card-links">
+        {links.map((l) => (
+          <a href={l.url} class="link-subtle entity-card-sublink">
+            <ArrowRight size={12} />
+            {l.title}
+          </a>
+        ))}
+      </div>
+    )}
+
+    {extItems.length > 0 && (
+      <div class="entity-card-ext">
+        <span class="entity-card-ext-title">{externalLinks?.title}</span>
+        <ul>
+          {extItems.slice(0, slim ? 2 : undefined).map((s) => (
+            <li>
+              {s.url ? (
+                <a
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="link-subtle entity-card-sublink"
+                >
+                  <span>{s.title}</span>
+                  <span class="link-arrow">🡵</span>
+                </a>
+              ) : (
+                <span class="entity-card-sublink">{s.title}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    <div class="card-bottom">
+      <a href={url} target={target} rel={rel} class="card-link">
+        <span>{actionText}</span>
+        {isExternal ? <span class="link-arrow">🡵</span> : <ArrowRight />}
+      </a>
+    </div>
+  </div>
+</article>
+
+<style>
+  .entity-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    box-sizing: border-box;
+    background-color: var(--card-bg, var(--color-surface));
+    border: 1px solid var(--card-border, var(--color-border));
+    border-radius: var(--card-radius, var(--radius-xl, 12px));
+    box-shadow: var(--card-shadow, var(--shadow-sm));
+    transition: var(--card-transition, all 150ms cubic-bezier(0.22, 1, 0.36, 1));
+    overflow: visible;
+  }
+
+  /* Only entity cards animate on hover */
+  .entity-card:hover {
+    border-color: var(--card-hover-border, var(--color-border-hover));
+    box-shadow: var(--card-hover-shadow, var(--shadow-md));
+  }
+
+  .entity-card:hover .entity-card-header img {
+    transform: scale(1.02);
+  }
+
+  /* --- Header (image mode) --- */
+  .entity-card-header {
+    position: relative;
+    height: 160px;
+    flex-shrink: 0;
+    background-color: var(--color-surface-sunken);
+    border-top-left-radius: calc(var(--card-radius, 12px) - 1px);
+    border-top-right-radius: calc(var(--card-radius, 12px) - 1px);
+  }
+
+  .slim .entity-card-header {
+    height: 110px;
+  }
+
+  .entity-card-img-link {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+  }
+
+  .entity-card-header img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform var(--transition-slow, 300ms ease);
+  }
+
+  .entity-card-date {
+    position: absolute;
+    top: var(--space-3);
+    left: var(--space-3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 5;
+  }
+
+  .date-month {
+    font-size: 0.65rem;
+    font-weight: var(--font-bold, 700);
+    color: var(--color-primary);
+    text-transform: uppercase;
+  }
+
+  .date-day {
+    font-size: 1.1rem;
+    font-weight: var(--font-bold, 700);
+    line-height: 1;
+    color: var(--color-text);
+  }
+
+  .date-year {
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+  }
+
+  .entity-card-top-right {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    max-width: 60%;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-sm);
+    background-color: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: var(--font-medium, 500);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 5;
+  }
+
+  /* --- Body --- */
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: var(--space-6, 1.5rem);
+  }
+
+  .slim .card-body {
+    padding: var(--space-4, 1rem);
+  }
+
+  .entity-card-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4, 1rem);
+    margin-bottom: var(--space-2, 0.5rem);
+  }
+
+  .entity-card-lead {
+    flex-shrink: 0;
+  }
+
+  .entity-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-lg, 10px);
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .entity-card-date-box {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.1;
+    background: var(--color-surface-sunken);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md, 8px);
+  }
+
+  .entity-card-title-area {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .category-label {
+    font-size: var(--text-2xs);
+    font-weight: var(--font-semibold, 600);
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+    margin-bottom: 2px;
+  }
+
+  .category-label.muted {
+    color: var(--color-text-muted);
+  }
+
+  .card-title {
+    font-size: var(--text-lg, 1.15rem);
+    font-weight: var(--font-bold, 700);
+    line-height: var(--leading-snug, 1.35);
+    color: var(--color-text);
+    margin: 0;
+  }
+
+  .slim .card-title {
+    font-size: var(--text-base, 1rem);
+  }
+
+  .card-title a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
+
+  .card-title a:hover {
+    color: var(--color-primary);
+  }
+
+  .card-description {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--leading-relaxed, 1.55);
+    margin: 0 0 var(--space-3, 0.75rem);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .slim .card-description {
+    -webkit-line-clamp: 2;
+  }
+
+  .entity-card-location {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-3);
+  }
+
+  .tags-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1-5);
+    margin-bottom: var(--space-3);
+  }
+
+  .entity-card-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1-5, 0.35rem);
+    margin-bottom: var(--space-3);
+  }
+
+  .entity-card-sublink {
+    font-size: var(--text-xs);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .entity-card-links :global(svg) {
+    color: var(--color-primary);
+  }
+
+  .entity-card-ext {
+    margin-bottom: var(--space-3);
+  }
+
+  .entity-card-ext-title {
+    display: block;
+    font-size: var(--text-2xs);
+    color: var(--color-text-muted);
+    font-weight: var(--font-medium, 500);
+    margin-bottom: var(--space-1);
+  }
+
+  .entity-card-ext ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .card-bottom {
+    display: flex;
+    align-items: center;
+    margin-top: auto;
+    padding-top: var(--space-3, 0.75rem);
+  }
+
+  .slim .card-bottom {
+    padding-top: var(--space-2, 0.5rem);
+  }
+</style>

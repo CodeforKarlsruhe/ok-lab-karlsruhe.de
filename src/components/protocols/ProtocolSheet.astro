@@ -1,0 +1,406 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Breadcrumb from '../layout/Breadcrumb.astro';
+import PrintBrandHeader from '../layout/PrintBrandHeader.astro';
+import Button from '../ui/Button.astro';
+import ProseContent from '../ui/ProseContent.astro';
+import ProtocolMetaBox from './ProtocolMetaBox.astro';
+import ProtocolDecisions from './ProtocolDecisions.astro';
+
+interface NamedEntity {
+  id: string;
+  name: string;
+}
+
+interface Props {
+  proto: CollectionEntry<'protocols'>;
+  formattedDate: string;
+  typeLabel: string;
+  facilitator?: NamedEntity | null;
+  scribe?: NamedEntity | null;
+  attendeesList: NamedEntity[];
+  linkedEvent?: CollectionEntry<'events'> | null;
+  linkedProjects: { id: string; title: string }[];
+}
+
+const {
+  proto,
+  formattedDate,
+  typeLabel,
+  facilitator,
+  scribe,
+  attendeesList,
+  linkedEvent,
+  linkedProjects,
+} = Astro.props;
+---
+
+<div class="protocol-detail-wrapper">
+  <div class="detail-toolbar">
+    <Breadcrumb href="/protokolle" label="Zurück zu allen Protokollen" />
+
+    <div class="toolbar-actions">
+      <Button
+        variant="secondary"
+        id="btn-copy-md"
+        data-title={proto.data.title}
+        data-markdown={proto.body || ''}
+      >
+        <svg
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <span class="btn-text">Markdown kopieren</span>
+      </Button>
+      <Button variant="primary" id="btn-print-protocol">
+        <svg
+          width="15"
+          height="15"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+          <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+        <span>Drucken / PDF</span>
+      </Button>
+    </div>
+  </div>
+
+  <main class="protocol-sheet">
+    <PrintBrandHeader badge={typeLabel} />
+
+    <h1>{proto.data.title}</h1>
+    <div class="sheet-doc-meta">
+      {formattedDate} · {typeLabel}
+    </div>
+
+    <ProtocolMetaBox
+      formattedDate={formattedDate}
+      typeLabel={typeLabel}
+      facilitator={facilitator}
+      scribe={scribe}
+      attendeesList={attendeesList}
+      linkedEvent={linkedEvent}
+      linkedProjects={linkedProjects}
+    />
+
+    <ProtocolDecisions decisions={proto.data.decisions} />
+
+    <ProseContent class="protocol-body markdown-body">
+      <slot />
+    </ProseContent>
+
+    <footer>
+      <div class="sig-location">Karlsruhe, den {formattedDate}</div>
+      <div class="sig-grid">
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <div class="sig-name">{facilitator?.name || '[Vorname Nachname]'}</div>
+          <div class="sig-role">(Versammlungsleitung / Vorstand)</div>
+        </div>
+        <div class="sig-block">
+          <div class="sig-line"></div>
+          <div class="sig-name">{scribe?.name || '[Vorname Nachname]'}</div>
+          <div class="sig-role">(Protokollführung)</div>
+        </div>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btnCopy = document.getElementById('btn-copy-md');
+    const btnText = btnCopy?.querySelector('.btn-text');
+    if (btnCopy) {
+      btnCopy.addEventListener('click', async () => {
+        const mdText = btnCopy.dataset.markdown;
+        const sheet = document.querySelector('.protocol-sheet');
+        const textToCopy = mdText || (sheet as HTMLElement | null)?.innerText || '';
+        try {
+          await navigator.clipboard.writeText(textToCopy);
+          if (btnText) {
+            const originalText = btnText.textContent;
+            btnText.textContent = 'Kopiert!';
+            setTimeout(() => {
+              btnText.textContent = originalText;
+            }, 2000);
+          }
+        } catch {
+          alert('Kopieren fehlgeschlagen.');
+        }
+      });
+    }
+
+    const btnPrint = document.getElementById('btn-print-protocol');
+    btnPrint?.addEventListener('click', () => {
+      window.print();
+    });
+  });
+</script>
+
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 2cm 1.5cm 1.8cm 1.5cm;
+  }
+
+  @page :first {
+    margin-top: 1.2cm;
+  }
+
+  .protocol-detail-wrapper {
+    max-width: calc(210mm + 3rem);
+    margin: 2rem auto 5rem;
+    padding: 0 1.5rem;
+  }
+
+  .detail-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .toolbar-actions {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .protocol-sheet {
+    font-family: var(--font-family-doc);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg, 12px);
+    padding: 2cm 1.5cm 1.8cm 1.5cm;
+    box-shadow: var(--shadow-sm);
+    line-height: 1.6;
+    color: var(--color-text);
+  }
+
+  h1 {
+    font-size: 1.85rem;
+    font-weight: 600;
+    margin: 0 0 0.35rem;
+    color: var(--color-text);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  .sheet-doc-meta {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin-bottom: 1.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .protocol-body :global(h1:first-child) {
+    display: none;
+  }
+
+  footer {
+    margin-top: 3.5rem;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .sig-location {
+    font-size: 0.95rem;
+    color: var(--color-text);
+    margin-bottom: 2.5rem;
+  }
+
+  .sig-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+
+  .sig-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sig-line {
+    width: 100%;
+    border-top: 1px solid var(--color-border-strong);
+    margin-bottom: 0.4rem;
+  }
+
+  .sig-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--color-text);
+  }
+
+  .sig-role {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 640px) {
+    .protocol-sheet {
+      padding: 2rem 1.25rem;
+    }
+
+    .sig-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+  }
+
+  @media print {
+    :global(body) {
+      background: white !important;
+      color: #1a1a1a !important;
+    }
+
+    .detail-toolbar {
+      display: none !important;
+    }
+
+    .protocol-detail-wrapper {
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .protocol-sheet {
+      font-family: var(--font-family-doc) !important;
+      background: white !important;
+      color: #1a1a1a !important;
+      font-size: 11pt;
+      line-height: 1.45;
+      border: none !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+    }
+
+    h1 {
+      font-size: 18pt;
+      line-height: 1.22;
+      margin: 0 0 0.35rem;
+      color: #1a1a1a !important;
+    }
+
+    .sheet-doc-meta {
+      font-size: 8.5pt;
+      color: #4b5563 !important;
+      margin-bottom: 1.2em;
+    }
+
+    .protocol-body {
+      font-size: 10.5pt !important;
+      line-height: 1.45 !important;
+      color: #1a1a1a !important;
+    }
+
+    .protocol-body :global(h2) {
+      border-bottom: none !important;
+      padding-bottom: 0 !important;
+      font-size: 13pt !important;
+      font-weight: 700 !important;
+      margin: 1.1rem 0 0.35rem !important;
+      color: #1a1a1a !important;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    .protocol-body :global(h3) {
+      font-size: 11.5pt !important;
+      font-weight: 700 !important;
+      margin: 0.75rem 0 0.25rem !important;
+      color: #1a1a1a !important;
+      break-after: avoid;
+      page-break-after: avoid;
+    }
+
+    .protocol-body :global(h4) {
+      font-size: 10.5pt !important;
+      color: #4b5563 !important;
+      margin: 0.6rem 0 0.2rem !important;
+    }
+
+    .protocol-body :global(p),
+    .protocol-body :global(li) {
+      color: #1a1a1a !important;
+      font-size: 10.5pt !important;
+      line-height: 1.45 !important;
+    }
+
+    .protocol-body :global(p) {
+      margin: 0 0 0.5rem !important;
+    }
+
+    .protocol-body :global(ul),
+    .protocol-body :global(ol) {
+      margin: 0.25rem 0 0.6rem 1.5rem !important;
+      padding-left: 0 !important;
+      color: #1a1a1a !important;
+    }
+
+    .protocol-body :global(li) {
+      margin-bottom: 0.15rem !important;
+    }
+
+    .protocol-body :global(strong) {
+      color: #1a1a1a !important;
+    }
+
+    .protocol-body :global(a) {
+      color: #0f9ed5 !important;
+      text-decoration: none !important;
+    }
+
+    footer {
+      margin-top: 2rem;
+    }
+
+    .sig-location {
+      font-size: 10.5pt;
+      color: #1a1a1a !important;
+      margin-bottom: 1.1cm;
+    }
+
+    .sig-grid {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 1.2cm !important;
+    }
+
+    .sig-line {
+      border-top: 0.4pt solid #1a1a1a !important;
+      margin-bottom: 0.25rem;
+    }
+
+    .sig-name {
+      font-size: 9.5pt;
+      color: #1a1a1a !important;
+    }
+
+    .sig-role {
+      font-size: 8.5pt;
+      color: #4b5563 !important;
+    }
+  }
+</style>

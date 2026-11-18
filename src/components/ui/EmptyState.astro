@@ -1,0 +1,139 @@
+---
+interface Props {
+  id?: string;
+  title?: string;
+  description?: string;
+  message?: string;
+  showReset?: boolean;
+  resetId?: string;
+  resetLabel?: string;
+  hidden?: boolean;
+  class?: string;
+}
+
+const {
+  id = 'no-results',
+  title = 'Keine Ergebnisse gefunden',
+  description,
+  message,
+  showReset = true,
+  resetId = 'btn-reset-filters',
+  resetLabel = 'Filter zurücksetzen',
+  hidden = true,
+  class: className = '',
+} = Astro.props;
+
+const descText =
+  description ||
+  message ||
+  'Versuche es mit einem anderen Suchbegriff oder setze die Filter zurück.';
+---
+
+<div id={id} class:list={['no-results empty-state', { hidden }, className]}>
+  <span class="no-results-icon" aria-hidden="true">
+    <slot name="icon">
+      <svg
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.3-4.3"></path>
+      </svg>
+    </slot>
+  </span>
+
+  <h3>{title}</h3>
+  <p>{descText}</p>
+
+  <div class="empty-state-actions">
+    <slot />
+    {showReset && (
+      <button type="button" id={resetId}>
+        {resetLabel}
+      </button>
+    )}
+  </div>
+</div>
+
+<style>
+  .no-results,
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 1.5rem;
+    color: var(--color-text);
+    width: 100%;
+    grid-column: 1 / -1;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .no-results.hidden,
+  .empty-state.hidden {
+    display: none !important;
+  }
+
+  .no-results-icon {
+    font-size: 2.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    opacity: 0.4;
+    color: var(--color-text);
+  }
+
+  h3 {
+    font-size: var(--text-xl, 1.25rem);
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 0.5rem 0;
+  }
+
+  p {
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm, 0.875rem);
+    line-height: var(--leading-relaxed, 1.6);
+    max-width: 440px;
+    margin: 0 auto;
+  }
+
+  .empty-state-actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  button {
+    margin-top: 0.25rem;
+    display: inline-block;
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius-md, 8px);
+    background: var(--color-surface-raised);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition:
+      background 150ms ease,
+      border-color 150ms ease;
+  }
+
+  button:hover {
+    background: var(--color-surface);
+    border-color: var(--color-border-hover);
+  }
+</style>

@@ -1,0 +1,96 @@
+---
+interface TabItem {
+  id: string;
+  label: string;
+  count?: number;
+  active?: boolean;
+  icon?: string;
+}
+
+interface Props {
+  tabs: TabItem[];
+  id?: string;
+  class?: string;
+}
+
+const { tabs, id = 'view-switcher', class: className = '' } = Astro.props;
+---
+
+<div class={`view-switcher-bar ${className}`}>
+  <div class="view-switcher" role="tablist" id={id}>
+    {tabs.map((tab, idx) => (
+      <button
+        type="button"
+        class={`view-tab-btn ${(tab.active ?? idx === 0) ? 'active' : ''}`}
+        data-tab={tab.id}
+        id={`tab-btn-${tab.id}`}
+        role="tab"
+        aria-selected={(tab.active ?? idx === 0) ? 'true' : 'false'}
+      >
+        <span>{tab.label}</span>
+        {typeof tab.count === 'number' && <span class="view-tab-badge">{tab.count}</span>}
+      </button>
+    ))}
+  </div>
+</div>
+
+<style>
+  .view-switcher-bar {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: var(--space-6);
+  }
+
+  .view-switcher {
+    display: inline-flex;
+    background-color: var(--color-surface-sunken);
+    padding: 3px;
+    border-radius: var(--radius-lg);
+    gap: 3px;
+    border: 1px solid var(--color-border-subtle);
+  }
+
+  .view-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0.45rem 0.95rem;
+    font-family: inherit;
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    line-height: var(--leading-none);
+    user-select: none;
+  }
+
+  .view-tab-btn:hover {
+    color: var(--color-text);
+  }
+
+  .view-tab-btn.active {
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    font-weight: var(--font-semibold);
+    box-shadow: var(--shadow-xs);
+  }
+
+  .view-tab-badge {
+    font-size: var(--text-2xs);
+    font-weight: var(--font-semibold);
+    padding: 0.15rem 0.45rem;
+    border-radius: var(--radius-full);
+    background-color: var(--color-surface-sunken);
+    color: var(--color-text-secondary);
+  }
+
+  .view-tab-btn.active .view-tab-badge {
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+  }
+</style>

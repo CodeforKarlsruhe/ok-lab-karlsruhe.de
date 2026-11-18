@@ -1,0 +1,197 @@
+---
+import LightboxImage from '../ui/LightboxImage.astro';
+
+interface Props {
+  title?: string;
+  titleLine1?: string;
+  titleHighlight?: string;
+  lead?: string;
+  image?: string | null;
+  imageAlt?: string;
+  metaAlt?: string | null;
+  variant?: 'page' | 'detail';
+  class?: string;
+}
+
+const {
+  title,
+  titleLine1,
+  titleHighlight,
+  lead,
+  image,
+  imageAlt = '',
+  metaAlt,
+  variant = 'page',
+  class: className = '',
+} = Astro.props;
+
+const headingText = title || titleLine1;
+const normalizedImage = image
+  ? image.startsWith('/') || image.startsWith('http')
+    ? image
+    : `/${image}`
+  : null;
+const resolvedAlt = imageAlt || headingText || '';
+const resolvedMetaAlt = metaAlt !== undefined ? metaAlt : resolvedAlt || undefined;
+const WrapperTag = variant === 'page' ? 'section' : 'div';
+---
+
+<WrapperTag class:list={[variant === 'page' ? 'split-hero' : 'split-hero-detail', className]}>
+  <div class="hero-container">
+    <div class:list={['hero-grid', { 'no-image': !normalizedImage }]}>
+      <div class="hero-content">
+        {(headingText || titleHighlight) && (
+          <h1>
+            {headingText}
+            {titleHighlight && (
+              <>
+                <br />
+                <span>{titleHighlight}</span>
+              </>
+            )}
+          </h1>
+        )}
+
+        {lead && <p>{lead}</p>}
+
+        <div class="hero-actions">
+          <slot />
+        </div>
+      </div>
+
+      {normalizedImage && (
+        <div class="hero-image-wrapper">
+          <LightboxImage
+            src={normalizedImage}
+            alt={resolvedAlt}
+            metaAlt={resolvedMetaAlt}
+            imgClass="hero-image"
+          />
+        </div>
+      )}
+    </div>
+  </div>
+</WrapperTag>
+
+<style>
+  .split-hero {
+    position: relative;
+    padding: 4.5rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+  }
+
+  .split-hero-detail {
+    position: relative;
+    padding: 3rem 0 3.5rem;
+  }
+
+  .hero-container {
+    max-width: var(--max-width, 1200px);
+    margin: 0 auto;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 3.5rem;
+    align-items: center;
+  }
+
+  .hero-grid.no-image {
+    grid-template-columns: 1fr;
+    max-width: 820px;
+  }
+
+  .hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+
+  h1 {
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--color-text);
+    margin: 0 0 1.25rem 0;
+    letter-spacing: -0.025em;
+  }
+
+  .split-hero-detail h1 {
+    font-size: 2.4rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+
+  h1 span {
+    color: var(--color-primary);
+  }
+
+  p {
+    display: block;
+    max-width: 520px;
+    margin: 0 0 2rem 0;
+    font-size: 1.05rem;
+    color: var(--color-text-secondary);
+    line-height: 1.65;
+  }
+
+  .split-hero-detail p {
+    max-width: none;
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-actions:empty {
+    display: none;
+  }
+
+  .hero-image-wrapper {
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: visible;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-md);
+    background: var(--color-surface-sunken);
+  }
+
+  .hero-image-wrapper :global(.hero-image) {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+    border-radius: var(--radius-md);
+  }
+
+  @media (max-width: 1024px) {
+    .hero-grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .split-hero {
+      padding: 3rem 1.25rem;
+    }
+
+    .split-hero-detail {
+      padding: 2.5rem 0;
+    }
+
+    h1 {
+      font-size: 2.15rem;
+    }
+  }
+</style>

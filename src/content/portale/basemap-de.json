@@ -1,0 +1,16 @@
+{
+  "title": "Basemap.de",
+  "region": "deutschland",
+  "url": "https://basemap.de/",
+  "description": "Amtliche Karten Deutschlands als Vektor-, Raster- und Höhenkarten.",
+  "subItems": [
+    {
+      "title": "Basemap Web Viewer",
+      "url": "https://basemap.de/viewer/"
+    },
+    {
+      "title": "Beta-Portal für offene Basisdaten",
+      "url": "https://basemap.de/open_data/"
+    }
+  ]
+}

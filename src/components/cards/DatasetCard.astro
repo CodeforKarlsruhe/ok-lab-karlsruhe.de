@@ -1,0 +1,98 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import EntityCard from './EntityCard.astro';
+
+interface Props {
+  dataset?: CollectionEntry<'datasets'> | Record<string, any>;
+  organizations?: CollectionEntry<'organizations'>[];
+  id?: string;
+  title?: string;
+  publisher?: string;
+  teaser?: string;
+  description?: string;
+  size?: string;
+  formats?: string[];
+  tags?: string[];
+  image?: string | null;
+  imageAlt?: string;
+  slim?: boolean;
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  dataset,
+  organizations,
+  id: propId,
+  title: propTitle,
+  publisher: propPublisher,
+  teaser: propTeaser,
+  description: propDescription,
+  size: propSize,
+  formats: propFormats,
+  tags: propTags,
+  image: propImage,
+  imageAlt: propImageAlt,
+  slim = false,
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+const raw = dataset
+  ? 'data' in dataset && dataset.data
+    ? { id: dataset.id, ...dataset.data }
+    : dataset
+  : {};
+
+const id = propId ?? raw.id;
+const title = propTitle ?? raw.title ?? '';
+const teaser = propTeaser ?? raw.teaser;
+const description = propDescription ?? raw.description;
+const size = propSize ?? raw.size;
+const formats = propFormats ?? raw.formats ?? [];
+const tags = propTags ?? raw.tags ?? [];
+const image = propImage !== undefined ? propImage : raw.image;
+const imageAlt = propImageAlt ?? raw.imageAlt;
+
+let publisher = propPublisher ?? raw.publisher ?? '';
+if (!publisher && Array.isArray(raw.publisherIds) && raw.publisherIds.length > 0) {
+  const orgs = organizations ?? (await getCollection('organizations'));
+  publisher = raw.publisherIds
+    .map((orgId: string) => orgs.find((o) => o.id === orgId)?.data.name || orgId)
+    .join(', ');
+}
+
+const teaserText = teaser || description || '';
+const altText = imageAlt || title;
+const searchCorpus =
+  `${title} ${teaserText} ${publisher} ${tags.join(' ')} ${formats.join(' ')}`.toLowerCase();
+
+const tagSliceCount = slim ? 1 : 2;
+const combinedTags = [
+  ...tags.slice(0, tagSliceCount),
+  ...formats.slice(0, tagSliceCount).map((f: string) => ({
+    label: f.toUpperCase(),
+    href: `/daten?format=${encodeURIComponent(f.trim().toLowerCase())}`,
+  })),
+];
+---
+
+<EntityCard
+  mode="image"
+  slim={slim}
+  title={title}
+  url={`/daten/${id}`}
+  image={image}
+  imageAlt={altText}
+  topRight={size}
+  category={publisher ? publisher.toUpperCase() : undefined}
+  categoryMuted={true}
+  description={teaserText}
+  tags={combinedTags}
+  actionText="Details ansehen"
+  class={`dataset-card ${className}`}
+  data-topics={tags.join(',')}
+  data-formats={formats.map((f: string) => f.toLowerCase()).join(',')}
+  data-search={searchCorpus}
+  {...rest}
+/>

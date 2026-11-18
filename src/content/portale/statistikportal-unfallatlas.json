@@ -1,0 +1,12 @@
+{
+  "title": "Statistikportal & Unfallatlas",
+  "region": "deutschland",
+  "url": "https://statistikportal.de",
+  "description": "Gemeinsames Angebot der statistischen Ämter des Bundes und der Länder.",
+  "subItems": [
+    {
+      "title": "Interaktiver Unfallatlas",
+      "url": "https://unfallatlas.statistikportal.de/"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+---
+import LegalPage from '../components/layout/LegalPage.astro';
+import { getEntry, render } from 'astro:content';
+
+const page = await getEntry('pages', 'satzung');
+if (!page) {
+  throw new Error('Satzung page not found in content/pages');
+}
+const { Content } = await render(page);
+---
+
+<LegalPage
+  title={page.data.title}
+  description={page.data.description}
+  lastUpdated={page.data.lastUpdated}
+  showPrintButton={true}
+>
+  <Content />
+</LegalPage>

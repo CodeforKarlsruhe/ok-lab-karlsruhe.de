@@ -1,0 +1,14 @@
+{
+  "title": "Klimaschutzkonzept & Daten für Klima-Dashboard",
+  "teaser": "Umfangreiche Datenbasis für das Karlsruher Klimadashboard inklusive Maßnahmenkatalog.",
+  "description": "Datenbasis für das Klimadashboard-Prototyp mit Maßnahmenkatalog. Wo steht Karlsruhe beim Klimaschutz? Dashboard Prototyp unter: https://dashboard.daten.city . QGIS, Geopandas, Shapely etc. nützlich.",
+  "publisherIds": ["stadt-karlsruhe-umwelt", "ok-lab-karlsruhe"],
+  "url": "https://github.com/digital-codes/klimaDashboard",
+  "tags": ["Klima", "Energie"],
+  "formats": ["pdf", "xlsx", "csv", "shp"],
+  "portalId": "transparenzportal-der-stadt-karlsruhe",
+  "size": "Repo-Größe",
+  "personIds": ["andreas-kugel"],
+  "useCases": "Klimamonitoring, Klimadashboard, Heatmaps, OSM-Synchronisation",
+  "image": "/assets/images/datasets/ka-klimadashboard-data/image.webp"
+}

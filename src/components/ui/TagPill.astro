@@ -1,0 +1,64 @@
+---
+interface Props {
+  variant?: 'tag' | 'topic' | 'format';
+  href?: string;
+  class?: string;
+  [key: string]: any;
+}
+
+const { variant = 'tag', href, class: className = '', ...rest } = Astro.props;
+
+const Tag = href ? 'a' : 'span';
+const classes = ['tag-pill', `tag-pill-${variant}`, className].filter(Boolean).join(' ');
+---
+
+<Tag href={href} class={classes} {...rest}>
+  <slot />
+</Tag>
+
+<style>
+  .tag-pill {
+    --tag-bg: var(--color-surface-pill);
+    --tag-text: var(--color-text-secondary);
+    --tag-border: var(--color-border-subtle);
+
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--text-2xs);
+    font-weight: var(--font-medium);
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-sm);
+    background-color: var(--tag-bg);
+    color: var(--tag-text);
+    border: 1px solid var(--tag-border);
+    line-height: var(--leading-normal);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  a.tag-pill:hover {
+    --tag-bg: var(--color-primary-light);
+    --tag-text: var(--color-primary);
+    --tag-border: rgba(232, 88, 28, 0.3);
+    text-decoration: none;
+  }
+
+  .tag-pill-topic {
+    --tag-bg: var(--color-primary-light);
+    --tag-text: var(--color-primary);
+    --tag-border: rgba(232, 88, 28, 0.2);
+  }
+
+  .tag-pill-format {
+    --tag-bg: var(--color-status-info-bg);
+    --tag-text: var(--color-status-info);
+    --tag-border: var(--color-status-info-border);
+    font-family: var(--font-family-mono);
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: var(--tracking-wide);
+  }
+</style>

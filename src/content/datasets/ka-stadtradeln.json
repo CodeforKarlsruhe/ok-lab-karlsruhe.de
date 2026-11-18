@@ -1,0 +1,14 @@
+{
+  "title": "Stadtradeln 2023/2024",
+  "teaser": "Georeferenzierte Daten zu gefahrenen Radwegen in Karlsruhe aus dem Stadtradeln-Programm.",
+  "description": "Daten zu gefahrenen Radwegen in Karlsruhe aus dem Stadtradeln-Programm.",
+  "publisherIds": ["stadt-karlsruhe-umwelt"],
+  "url": "https://my.hidrive.com/share/7tham.o1ma#$/Stadtradeln_2023-2024",
+  "tags": ["Mobilität", "Umwelt", "Geodaten"],
+  "formats": ["geojson"],
+  "portalId": "transparenzportal-der-stadt-karlsruhe",
+  "size": "Jahresdatensatz",
+  "personIds": ["stefan-jergentz"],
+  "useCases": "Mobilitätsanalyse Radverkehr",
+  "image": "/assets/images/datasets/ka-stadtradeln/image.webp"
+}

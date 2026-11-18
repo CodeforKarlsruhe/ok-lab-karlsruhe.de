@@ -1,0 +1,201 @@
+---
+interface Props {
+  badge?: string;
+  printOnly?: boolean;
+}
+
+const { badge, printOnly = false } = Astro.props;
+---
+
+<header class:list={['print-brand-header', { 'print-only': printOnly }]}>
+  <div class="brand-row">
+    <div class="brand-info">
+      <div class="brand-org">Code for Karlsruhe</div>
+      <div class="brand-tagline">
+        <span class="cfk-green">Open Knowledge Lab Karlsruhe</span>
+        <span class="cfk-sep"> · </span>
+        <span class="cfk-orange">Transparenz</span>
+        <span class="cfk-sep"> · </span>
+        <span class="cfk-purple">Mitmachen</span>
+        <span class="cfk-sep">·</span>
+        <span class="cfk-blue">Open Data</span>
+      </div>
+    </div>
+
+    <div class="brand-right">
+      {badge && <span class="sheet-badge">{badge}</span>}
+      <img src="/assets/images/okl.svg" alt="Code for Karlsruhe Logo" class="brand-logo" />
+    </div>
+  </div>
+
+  <div class="cfk-color-rule" aria-hidden="true"></div>
+</header>
+
+<style>
+  .print-brand-header {
+    font-family: var(--font-family-doc);
+    margin-bottom: 1.75rem;
+  }
+
+  .print-brand-header.print-only {
+    display: none;
+  }
+
+  .brand-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .brand-info {
+    min-width: 0;
+  }
+
+  .brand-org {
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-text);
+    letter-spacing: -0.015em;
+  }
+
+  .brand-tagline {
+    margin-top: 0.2rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .cfk-green {
+    color: #4ea72e;
+  }
+
+  .cfk-orange {
+    color: #e97132;
+  }
+
+  .cfk-purple {
+    color: #a02b93;
+  }
+
+  .cfk-blue {
+    color: #0f9ed5;
+  }
+
+  .cfk-sep {
+    color: var(--color-text-muted);
+    font-weight: 400;
+  }
+
+  .brand-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .sheet-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text);
+    background: var(--color-surface-sunken);
+    border: 1px solid var(--color-border);
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    letter-spacing: normal;
+  }
+
+  .brand-logo {
+    height: 44px;
+    width: auto;
+    display: block;
+  }
+
+  .cfk-color-rule {
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(
+      to right,
+      #4ea72e 0% 25%,
+      #e97132 25% 50%,
+      #a02b93 50% 75%,
+      #0f9ed5 75% 100%
+    );
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  @media (max-width: 640px) {
+    .brand-row {
+      align-items: flex-start;
+    }
+
+    .brand-right {
+      flex-direction: column-reverse;
+      align-items: flex-end;
+      gap: 0.4rem;
+    }
+  }
+
+  @media print {
+    .print-brand-header {
+      margin-bottom: 0.9rem;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .print-brand-header.print-only {
+      display: block;
+    }
+
+    .brand-row {
+      margin-bottom: 2mm;
+      align-items: flex-end;
+    }
+
+    .brand-org {
+      font-size: 16pt;
+      color: #1a1a1a !important;
+    }
+
+    .brand-tagline {
+      font-size: 8.5pt;
+    }
+
+    .cfk-green {
+      color: #4ea72e !important;
+    }
+
+    .cfk-orange {
+      color: #e97132 !important;
+    }
+
+    .cfk-purple {
+      color: #a02b93 !important;
+    }
+
+    .cfk-blue {
+      color: #0f9ed5 !important;
+    }
+
+    .cfk-sep {
+      color: #4b5563 !important;
+    }
+
+    .sheet-badge {
+      display: none !important;
+    }
+
+    .brand-logo {
+      height: 1.5cm;
+    }
+
+    .cfk-color-rule {
+      height: 1.5pt;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+</style>

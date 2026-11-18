@@ -1,0 +1,166 @@
+name: CI & Deploy
+
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run: nur prüfen was hochgeladen/gelöscht werden würde'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate-and-build:
+    name: Check & Build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: 📥 Repository auschecken
+        uses: actions/checkout@v4
+
+      - name: 📦 pnpm einrichten
+        uses: pnpm/action-setup@v4
+
+      - name: ⚙️ Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: 📦 Abhängigkeiten installieren
+        run: pnpm install --frozen-lockfile
+
+      - name: 🎨 Code-Formatierung prüfen (Prettier check only)
+        run: pnpm run format:check
+
+      - name: 🧹 Linter ausführen (ESLint check only)
+        run: pnpm run lint
+
+      - name: 🧪 Unit-Tests ausführen (Vitest)
+        run: pnpm run test
+
+      - name: 🖼️ Bilder prüfen (WebP & max. 1920×1080 px)
+        id: check_images
+        run: node scripts/check-images.mjs
+
+      - name: 🔄 Nicht-konforme Bilder als WebP aufbereiten
+        if: steps.check_images.outputs.has_warnings == 'true'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          node scripts/check-images.mjs --output-dir optimized-images
+
+      - name: 📎 Konvertierte WebP-Bilder als Artefakt bereitstellen
+        if: steps.check_images.outputs.has_warnings == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: optimized-webp-images
+          path: optimized-images
+          retention-days: 7
+
+      - name: 🔄 Astro Content Collections & Typen synchronisieren
+        run: pnpm run sync
+        env:
+          ASTRO_TELEMETRY_DISABLED: '1'
+
+      - name: 🔍 TypeScript & Astro-Templates prüfen
+        run: pnpm run check
+
+      - name: 🏗️ Astro-Projekt bauen
+        run: pnpm run build
+        env:
+          ASTRO_TELEMETRY_DISABLED: '1'
+
+      - name: 📦 Build-Artefakt für Deploy bereitstellen
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-site
+          path: dist
+          retention-days: 1
+
+  deploy:
+    name: SFTP Deploy
+    needs: validate-and-build
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    environment: production
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: 📥 Build-Artefakt laden
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-site
+          path: dist
+
+      - name: 💾 Deploy-Cache wiederherstellen
+        uses: actions/cache@v4
+        id: deploy-cache
+        with:
+          path: dist-cache
+          key: dist-deploy-${{ github.sha }}
+          restore-keys: dist-deploy-
+
+      - name: ⏱️ Zeitstempel für unveränderte Dateien wiederherstellen
+        run: |
+          if [ -d dist-cache ]; then
+            find dist -type f | while read -r file; do
+              cached="dist-cache/${file#dist/}"
+              if [ -f "$cached" ] && cmp -s "$file" "$cached"; then
+                touch -r "$cached" "$file"
+              fi
+            done
+          fi
+
+      - name: 📦 lftp installieren
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+
+      - name: 🚀 dist via SFTP deployen
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          LFTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          SERVER_DIR: ${{ vars.FTP_SERVER_DIR || './' }}
+          DRY_RUN: ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: |
+          # Normalize host (strip any protocol prefix if present)
+          SERVER="${FTP_SERVER#sftp://}"
+          SERVER="${SERVER#ftp://}"
+
+          cat > "$RUNNER_TEMP/connect.lftp" <<EOF
+          set sftp:auto-confirm yes
+          set net:timeout 30
+          set net:max-retries 8
+          set net:reconnect-interval-base 15
+          set net:reconnect-interval-multiplier 1.5
+          set mirror:parallel-transfer-count 3
+          open -u "$FTP_USERNAME" --env-password "sftp://$SERVER"
+          cd "$SERVER_DIR"
+          EOF
+
+          cat > "$RUNNER_TEMP/deploy.lftp" <<EOF
+          source $RUNNER_TEMP/connect.lftp
+          mirror --reverse --delete --only-newer --overwrite --no-perms --verbose=1 $DRY_RUN \
+            --exclude '(^|/)(\.git|\.well-known)(/|$)' \
+            --exclude '(^|/)\.htaccess$' \
+            --exclude '(^|/)\.user\.ini$' \
+            dist/ .
+          EOF
+          lftp -f "$RUNNER_TEMP/deploy.lftp"
+
+      - name: 💾 Deploy-Cache aktualisieren
+        if: inputs.dry_run != true
+        run: |
+          rm -rf dist-cache
+          cp -a dist dist-cache

@@ -1,0 +1,74 @@
+---
+import Button from './Button.astro';
+import Icon from './Icon.astro';
+import ArrowRight from './ArrowRight.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  buttonText: string;
+  buttonHref: string;
+  variant?: 'primary' | 'outline';
+  icon?: 'mail' | 'arrow';
+  class?: string;
+}
+
+const {
+  title,
+  description,
+  buttonText,
+  buttonHref,
+  variant = 'outline',
+  icon = 'arrow',
+  class: className = '',
+} = Astro.props;
+---
+
+<div class:list={['cta-banner', className]}>
+  <div>
+    <h3>{title}</h3>
+    <p>{description}</p>
+  </div>
+  <Button href={buttonHref} variant={variant} size="sm">
+    {icon === 'mail' && <Icon slot="icon-left" name="mail" size={15} strokeWidth={2} />}
+    <span>{buttonText}</span>
+    {icon === 'arrow' && <ArrowRight slot="icon-right" class="" size={13} />}
+  </Button>
+</div>
+
+<style>
+  .cta-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2.5rem;
+    gap: 2rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 0.35rem 0;
+  }
+
+  p {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.55;
+    margin: 0;
+    max-width: 700px;
+  }
+
+  @media (max-width: 650px) {
+    .cta-banner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

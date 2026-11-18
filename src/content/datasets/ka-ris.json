@@ -1,0 +1,15 @@
+{
+  "title": "Ratsinformationssystem Karlsruhe (Datensatz)",
+  "teaser": "Nachverarbeitetes Ratsinformationssystem inklusive Markdown-Volltexten, KI-Zusammenfassungen und Vektor-Embeddings.",
+  "description": "Im Ratsinformationssystem gibt es Volltexte politischer Beschlüsse (Ergebnisse aus dem Gemeinderat). Wir wollen diese besser durchsuchbar machen, beispielsweise mit einem KI-Chatbot auf RAG-Basis. Die RIS-Daten werden über eine OParl-API zur Verfügung gestellt. Diese API wird auch in anderen Städten verwendet. Wir haben die Rohdaten, die via OParl erhältlich sind, abgerufen und nachverarbeitet. Diese Daten liegen im JSON-Format vor. Wir haben dann alle referenzierten PDF-Dokumente (ca. 40.000) abgerufen und in Markdown umgewandelt, sowie Tabellen extrahiert (beides sofern möglich). Die Markdown-Texte wurden mit einem Sprachmodell zusammengefasst. Daraus wurden Embedding-Vektoren erzeugt. Wir haben versucht, das ursprüngliche Datenmodell in einer MySQL-Datenbank zu rekonstruieren. Es stehen somit verschiedene Möglichkeiten zur Verarbeitung bereit.",
+  "publisherIds": ["stadt-karlsruhe"],
+  "url": "https://my.hidrive.com/share/10.0hxq4we#$/ka-ris",
+  "tags": ["Politik", "Transparenz"],
+  "formats": ["pdf", "sonstige", "json", "sql", "embeddings"],
+  "portalId": "ratsinformationssystem-mit-sitzungsprotokollen-aus-dem-gemeinderat",
+  "size": "7GB",
+  "personIds": ["wolfgang-radke", "jaro-eiermann", "andreas-kugel"],
+  "useCases": "Large-language Model (LLM), RAG, Politische Analysen",
+  "image": "/assets/images/datasets/ka-ris/image.webp",
+  "imageAlt": "OParl Dokumente & Protokolle (© Stadt Karlsruhe / Gemeinderat)"
+}

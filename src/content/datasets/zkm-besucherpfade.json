@@ -1,0 +1,14 @@
+{
+  "title": "ZKM Besucherpfade & Archivdaten",
+  "teaser": "Interessante Bewegungsdaten und Besucherpfade der 'Renaissance 3.0'-Ausstellung im ZKM.",
+  "description": "Daten zu Ausstellungen, Kunstwerken und Besucherbewegungen der Renaissance 3.0 Ausstellung. Passwort: odd2025",
+  "publisherIds": ["zkm"],
+  "url": "https://my.hidrive.com/share/7tham.o1ma#$/zkm/odd25",
+  "tags": ["Kultur", "Digital Humanities"],
+  "formats": ["json"],
+  "portalId": null,
+  "size": "1.2 GB",
+  "personIds": ["andreas-kugel"],
+  "useCases": "Kulturwissenschaftliche Forschung",
+  "image": "/assets/images/datasets/zkm-besucherpfade/image.webp"
+}

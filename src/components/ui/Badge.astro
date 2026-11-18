@@ -1,0 +1,104 @@
+---
+interface Props {
+  variant?: 'primary' | 'success' | 'warning' | 'info' | 'neutral' | 'dark';
+  size?: 'sm' | 'md';
+  dot?: boolean;
+  class?: string;
+  id?: string;
+  [key: string]: any;
+}
+
+const {
+  variant = 'neutral',
+  size = 'md',
+  dot = false,
+  class: className = '',
+  id,
+  ...rest
+} = Astro.props;
+
+const classes = ['badge', `badge-${variant}`, `badge-${size}`, className].filter(Boolean).join(' ');
+---
+
+<span class={classes} id={id} {...rest}>
+  {dot && <span class="badge-dot" aria-hidden="true"></span>}
+  <slot />
+</span>
+
+<style>
+  .badge {
+    --badge-bg: var(--color-surface-pill);
+    --badge-text: var(--color-text-secondary);
+    --badge-border: transparent;
+
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1-5);
+    padding: var(--badge-padding-y, 0.2rem) var(--badge-padding-x, 0.55rem);
+    font-size: var(--badge-font-size, var(--text-2xs));
+    font-weight: var(--badge-font-weight, var(--font-medium));
+    border-radius: var(--badge-radius, var(--radius-sm));
+    line-height: var(--leading-none);
+    letter-spacing: var(--tracking-normal);
+    background-color: var(--badge-bg);
+    color: var(--badge-text);
+    border: 1px solid var(--badge-border);
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .badge-sm {
+    padding: 0.15rem 0.45rem;
+    font-size: var(--text-2xs);
+  }
+
+  .badge-md {
+    padding: 0.22rem 0.6rem;
+    font-size: var(--text-2xs);
+  }
+
+  /* Variants */
+  .badge-primary {
+    --badge-bg: var(--color-primary-light);
+    --badge-text: var(--color-primary);
+    --badge-border: rgba(232, 88, 28, 0.25);
+  }
+
+  .badge-success {
+    --badge-bg: var(--color-status-success-bg);
+    --badge-text: var(--color-status-success);
+    --badge-border: var(--color-status-success-border);
+  }
+
+  .badge-warning {
+    --badge-bg: var(--color-status-warning-bg);
+    --badge-text: var(--color-status-warning);
+    --badge-border: var(--color-status-warning-border);
+  }
+
+  .badge-info {
+    --badge-bg: var(--color-status-info-bg);
+    --badge-text: var(--color-status-info);
+    --badge-border: var(--color-status-info-border);
+  }
+
+  .badge-neutral {
+    --badge-bg: var(--color-status-neutral-bg);
+    --badge-text: var(--color-status-neutral);
+    --badge-border: var(--color-status-neutral-border);
+  }
+
+  .badge-dark {
+    --badge-bg: var(--color-secondary);
+    --badge-text: var(--color-secondary-contrast);
+    --badge-border: var(--color-secondary);
+  }
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background-color: currentColor;
+    flex-shrink: 0;
+  }
+</style>

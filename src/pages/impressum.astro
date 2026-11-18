@@ -1,0 +1,18 @@
+---
+import LegalPage from '../components/layout/LegalPage.astro';
+import { getEntry, render } from 'astro:content';
+
+const page = await getEntry('pages', 'impressum');
+if (!page) {
+  throw new Error('Impressum page not found in content/pages');
+}
+const { Content } = await render(page);
+---
+
+<LegalPage
+  title={page.data.title}
+  description={page.data.description}
+  lastUpdated={page.data.lastUpdated}
+>
+  <Content />
+</LegalPage>

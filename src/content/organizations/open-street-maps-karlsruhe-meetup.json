@@ -1,0 +1,7 @@
+{
+  "name": "OpenStreetMap Karlsruhe Meetup",
+  "url": "https://wiki.openstreetmap.org/wiki/Karlsruhe",
+  "description": "Regelmäßiges Treffen zur Arbeit an freien Geodaten.",
+  "isOpenDataProvider": true,
+  "region": "karlsruhe"
+}
