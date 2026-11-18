@@ -25,13 +25,13 @@ jobs:
 
     steps:
       - name: 📥 Repository auschecken
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 📦 pnpm einrichten
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: ⚙️ Node.js einrichten
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: 'pnpm'
@@ -60,7 +60,7 @@ jobs:
 
       - name: 📎 Konvertierte WebP-Bilder als Artefakt bereitstellen
         if: steps.check_images.outputs.has_warnings == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: optimized-webp-images
           path: optimized-images
@@ -81,7 +81,7 @@ jobs:
 
       - name: 📦 Build-Artefakt für Deploy bereitstellen
         if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dist-site
           path: dist
@@ -99,13 +99,13 @@ jobs:
 
     steps:
       - name: 📥 Build-Artefakt laden
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: dist-site
           path: dist
 
       - name: 💾 Deploy-Cache wiederherstellen
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: deploy-cache
         with:
           path: dist-cache
