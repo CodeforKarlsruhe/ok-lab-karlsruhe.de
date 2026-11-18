@@ -39,7 +39,7 @@ const {
   imageAlt: propImageAlt,
   tags: propTags,
   repoUrl: _repoUrl,
-  projectUrl: propProjectUrl,
+  projectUrl: _projectUrl,
   featured: _featured,
   isExternal: propIsExternal,
   slim = false,
@@ -61,7 +61,6 @@ const status = propStatus ?? raw.status ?? 'active';
 const image = propImage !== undefined ? propImage : raw.image;
 const imageAlt = propImageAlt ?? raw.imageAlt ?? title;
 const tags = propTags ?? raw.tags ?? [];
-const projectUrl = propProjectUrl ?? raw.projectUrl;
 const rawScope = propScope ?? raw.scope;
 
 const effectiveUrl = propUrl || (id ? `/projekte/${id}` : '#');
