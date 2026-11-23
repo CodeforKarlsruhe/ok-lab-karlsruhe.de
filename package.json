@@ -41,7 +41,7 @@
     "@astrojs/sitemap": "^3.7.5",
     "@keystatic/astro": "^6.0.0",
     "@keystatic/core": "^0.6.9",
-    "astro": "^7.4.12",
+    "astro": "^7.4.13",
     "fuse.js": "^7.5.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
