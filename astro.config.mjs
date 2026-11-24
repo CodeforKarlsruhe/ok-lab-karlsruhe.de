@@ -23,7 +23,6 @@ export default defineConfig({
   redirects: {
     '/portale': '/daten#portale',
     '/organisationen': '/daten#organisationen',
-    '/protokolle/neu': '/keystatic/collection/protocols',
     '/veranstaltungen': '/events',
   },
 });
