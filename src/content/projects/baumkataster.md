@@ -1,6 +1,6 @@
 ---
-title: Baumkataster
-date: '2019-10-01'
+title: Baumkataster2
+date: 2019-10-01
 teaser: >-
   Aufbereitung und interaktive Darstellung des städtischen Baumkatasters mit
   Position und Art aller städtischen Bäume (inklusive Zusatz-Infos) sowie
@@ -24,9 +24,9 @@ relatedProjectIds: []
 externalLinks:
   - name: Offizielles Baumkataster (Geoportal Karlsruhe)
     url: https://geoportal.karlsruhe.de/fachplaene/?page=Baumkataster
+press: []
 featured: true
 ---
-
 > "Karten-Visualisierung über alle städtischen Bäume."
 
 Das städtische Baumkataster der Stadt Karlsruhe erfasst tausende Bäume im gesamten Stadtgebiet. Mit diesem Projekt möchten wir Bürgerinnen und Bürgern einen einfachen, interaktiven Zugang zu diesen Daten ermöglichen.
@@ -46,13 +46,13 @@ Die Rohdaten aus dem städtischen Geoportal werden über ein Python-basiertes Da
 ### Screenshots & Galerie
 
 ![Baumkataster-Karte der Südstadt mit Kennzahlen](/assets/images/projects/baumkataster/baumkataster-suedstadt.webp)
-_Interaktive Baumkataster-Karte für die Karlsruher Südstadt mit Stadtteil-Kennzahlen_
+*Interaktive Baumkataster-Karte für die Karlsruher Südstadt mit Stadtteil-Kennzahlen*
 
 ![Kennzahlen für die Nordweststadt](/assets/images/projects/baumkataster/baumkataster-nordweststadt.webp)
-_Vergleich von Einwohnerzahl, Bäumen und Fläche in der Nordweststadt_
+*Vergleich von Einwohnerzahl, Bäumen und Fläche in der Nordweststadt*
 
 ![Popup-Details zu einer Hainbuche](/assets/images/projects/baumkataster/baumkataster-hainbuche.webp)
-_Detailansicht einer Hainbuche (Carpinus betulus) mit Koordinaten und KLAM-Wert_
+*Detailansicht einer Hainbuche (Carpinus betulus) mit Koordinaten und KLAM-Wert*
 
 ![Popup-Details zu einer Winter-Linde](/assets/images/projects/baumkataster/baumkataster-winterlinde.webp)
-_Detailansicht einer Winter-Linde (Tilia cordata) im Stadtgebiet_
+*Detailansicht einer Winter-Linde (Tilia cordata) im Stadtgebiet*
