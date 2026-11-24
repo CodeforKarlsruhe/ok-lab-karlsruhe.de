@@ -5,3 +5,7 @@
 [build.environment]
   NODE_VERSION = "22"
 
+[context.production]
+  command = "pnpm run build && rm -rf dist-keystatic && mkdir -p dist-keystatic && cp -r dist/_astro dist-keystatic/_astro && printf '/ /keystatic 302\n' > dist-keystatic/_redirects"
+  publish = "dist-keystatic"
+
