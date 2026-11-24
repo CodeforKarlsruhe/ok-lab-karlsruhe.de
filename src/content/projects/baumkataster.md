@@ -1,5 +1,5 @@
 ---
-title: Baumkataster24
+title: Baumkataster241
 date: 2019-10-01
 teaser: >-
   Aufbereitung und interaktive Darstellung des städtischen Baumkatasters mit
