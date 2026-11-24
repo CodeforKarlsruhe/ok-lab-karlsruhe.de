@@ -29,7 +29,7 @@ const isGitHubMode =
 
 export default config({
   storage: isGitHubMode
-    ? { kind: 'github', repo: 'CodeforKarlsruhe/oklab-karlsruhe.de' }
+    ? { kind: 'github', repo: 'CodeforKarlsruhe/ok-lab-karlsruhe.de' }
     : { kind: 'local' },
   ui: {
     brand: {

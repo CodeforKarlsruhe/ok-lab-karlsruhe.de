@@ -5,7 +5,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CodeforKarlsruhe/oklab-karlsruhe.de.git"
+    "url": "https://github.com/CodeforKarlsruhe/ok-lab-karlsruhe.de.git"
   },
   "packageManager": "pnpm@11.27.0",
   "description": "Website des OK Lab Karlsruhe — Wissensgraph & Community-Plattform",
