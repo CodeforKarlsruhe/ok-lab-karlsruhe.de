@@ -6,6 +6,7 @@ teaser: >-
   Position und Art aller städtischen Bäume (inklusive Zusatz-Infos) sowie
   Vergleich zu Einwohnerzahl und Fläche für alle Stadtteile.
 image: /assets/images/projects/baumkataster/image.webp
+imageAlt: Screenshot der Baumkataster-Website, OK Lab Karlsruhe
 scope: internal
 status: completed
 category: Urban Data
