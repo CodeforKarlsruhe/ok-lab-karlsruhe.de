@@ -27,6 +27,7 @@ externalLinks:
 press: []
 featured: true
 ---
+
 > "Karten-Visualisierung über alle städtischen Bäume."
 
 Das städtische Baumkataster der Stadt Karlsruhe erfasst tausende Bäume im gesamten Stadtgebiet. Mit diesem Projekt möchten wir Bürgerinnen und Bürgern einen einfachen, interaktiven Zugang zu diesen Daten ermöglichen.
@@ -46,13 +47,13 @@ Die Rohdaten aus dem städtischen Geoportal werden über ein Python-basiertes Da
 ### Screenshots & Galerie
 
 ![Baumkataster-Karte der Südstadt mit Kennzahlen](/assets/images/projects/baumkataster/baumkataster-suedstadt.webp)
-*Interaktive Baumkataster-Karte für die Karlsruher Südstadt mit Stadtteil-Kennzahlen*
+_Interaktive Baumkataster-Karte für die Karlsruher Südstadt mit Stadtteil-Kennzahlen_
 
 ![Kennzahlen für die Nordweststadt](/assets/images/projects/baumkataster/baumkataster-nordweststadt.webp)
-*Vergleich von Einwohnerzahl, Bäumen und Fläche in der Nordweststadt*
+_Vergleich von Einwohnerzahl, Bäumen und Fläche in der Nordweststadt_
 
 ![Popup-Details zu einer Hainbuche](/assets/images/projects/baumkataster/baumkataster-hainbuche.webp)
-*Detailansicht einer Hainbuche (Carpinus betulus) mit Koordinaten und KLAM-Wert*
+_Detailansicht einer Hainbuche (Carpinus betulus) mit Koordinaten und KLAM-Wert_
 
 ![Popup-Details zu einer Winter-Linde](/assets/images/projects/baumkataster/baumkataster-winterlinde.webp)
-*Detailansicht einer Winter-Linde (Tilia cordata) im Stadtgebiet*
+_Detailansicht einer Winter-Linde (Tilia cordata) im Stadtgebiet_
