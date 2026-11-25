@@ -1,6 +1,6 @@
 ---
-title: Baumkataster
-date: '2019-10-01'
+title: Baumkataster11
+date: 2019-10-01
 teaser: >-
   Aufbereitung und interaktive Darstellung des städtischen Baumkatasters mit
   Position und Art aller städtischen Bäume (inklusive Zusatz-Infos) sowie
@@ -24,6 +24,7 @@ relatedProjectIds: []
 externalLinks:
   - name: Offizielles Baumkataster (Geoportal Karlsruhe)
     url: https://geoportal.karlsruhe.de/fachplaene/?page=Baumkataster
+press: []
 featured: true
 ---
 
